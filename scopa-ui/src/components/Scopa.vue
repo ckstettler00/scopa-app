@@ -77,7 +77,7 @@
             <v-text-field style="padding: 5%" dense outlined label="Cards" value="40"/>
           </v-card>
           <v-spacer width="10%"/>
-          <v-card width="50%" elevation="10" style="padding: 2%">
+          <v-card width="60%" elevation="10" style="padding: 2%">
             <v-row v-for="r in 2"
                    :key="r"
                    width="100%" style="padding:1%">
@@ -89,8 +89,8 @@
                         style="padding: 2%"
                 @click="toggle">
               <v-img
-                  src="../assets/2D.png"
-                  lazy-src="../assets/2D.png"
+                  src="../assets/10-swords.jpg"
+                  lazy-src="../assets/10-swords.jpg"
                   aspect-ratio="16/9"
                   width="100%"
                   class="grey lighten-2">
