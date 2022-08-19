@@ -134,7 +134,6 @@ public class GameControl extends EventSource {
         throw new PlayerNotFoundException(id);
     }
     protected void handleGameOver(GameEvent event) {
-        changeState(State.WINNER);
 
         GameOverEvent overEvent = new GameOverEvent();
         overEvent.setWinningPlayer(player1.getDetails());
@@ -150,8 +149,7 @@ public class GameControl extends EventSource {
         }
 
         // Send status updates for score.
-        player1Source.triggerEvent(new GameStatusEvent(this.getStatus(player1)));
-        player2Source.triggerEvent(new GameStatusEvent(this.getStatus(player2)));
+        sendStatuses();
 
         // Send game over event
         player1Source.triggerEvent(overEvent);
@@ -187,6 +185,7 @@ public class GameControl extends EventSource {
             // Check for scopa
             if (this.gameplay.getTableCards().isEmpty()) {
                 logger.info("Player {} got a scopa", currentPlayer);
+
                 currentPlayerSource.triggerEvent(new ScopaEvent());
                 currentPlayer.setScore(currentPlayer.getScore()+1);
             }
@@ -220,34 +219,38 @@ public class GameControl extends EventSource {
 
                 if (this.gameplay.winner()) {
                     logger.info("Detected a winner.");
-                    this.triggerEvent(new GameOverEvent());
+                    changeState(State.WINNER);
+                } else {
+                    logger.info("Detected end of round.");
+                    // If we have exhausted the deck then trigger end of round
+                    changeState(State.START_ROUND);
                 }
+
             } else {
                 logger.info("Deal next hand.  Turn Count={} Round Count={}", turnCounter, roundCounter);
                 this.dealHands();
             }
         }
 
-        if (currentState.equals(State.WAIT_4_PLAYER1_MOVE)) {
+        if (currentState.equals(State.WINNER)) {
+            logger.info("Game {} is over sending event.", this.gameId);
+            this.triggerEvent(new GameOverEvent());
+        } else if (currentState.equals(State.START_ROUND)) {
+            logger.info("Sending start round event game {}", this.gameId);
+            this.triggerEvent(new StartRoundEvent());
+        } else if (currentState.equals(State.WAIT_4_PLAYER1_MOVE)) {
 
             logger.info("Send status updates and switch to player2");
             // Send a request for player 2 to play.
             changeState(State.WAIT_4_PLAYER2_MOVE);
-            player1Source.triggerEvent(new GameStatusEvent(getStatus(player1)));
-            player2Source.triggerEvent(new GameStatusEvent(getStatus(player2)));
+            sendStatuses();
             player2Source.triggerEvent(new PlayRequestEvent(player2.getDetails()));
 
-        } else if (this.gameplay.getDeck().size() == 0) {
-            logger.info("Detected end of round.");
-            // If we have exhausted the deck then trigger end of round
-            changeState(State.START_ROUND);
-            this.triggerEvent(new StartRoundEvent());
-        } else {
+        } else if (currentState.equals(State.WAIT_4_PLAYER2_MOVE)) {
             logger.info("Send status updates and switch to player1.");
             // Send a request for player 1 to play.
             changeState(State.WAIT_4_PLAYER1_MOVE);
-            player1Source.triggerEvent(new GameStatusEvent(getStatus(player1)));
-            player2Source.triggerEvent(new GameStatusEvent(getStatus(player2)));
+            sendStatuses();
             player1Source.triggerEvent(new PlayRequestEvent(player1.getDetails()));
         }
     }
@@ -277,8 +280,7 @@ public class GameControl extends EventSource {
         }
 
         // Update the players
-        player1Source.triggerEvent(new GameStatusEvent(getStatus(player1)));
-        player2Source.triggerEvent(new GameStatusEvent(getStatus(player2)));
+        sendStatuses();
 
         // Send a request for player to play.
         logger.debug("waiting for player id: {} handle:{} to move", currentPlayer.getDetails().getPlayerId(),
@@ -316,11 +318,14 @@ public class GameControl extends EventSource {
         return;
     }
 
+    protected void sendStatuses() {
+        player1Source.triggerEvent(new GameStatusEvent(getStatus(player1)));
+        player2Source.triggerEvent(new GameStatusEvent(getStatus(player2)));
+    }
 
-    public void waitForGameComplete()
-    {
+    public void waitForGameComplete() {
         logger.debug("waiting for the game to complete");
-        while(!currentState.equals(State.WINNER)) {
+        while (!currentState.equals(State.WINNER)) {
             try {
                 Thread.sleep(1000L);
             } catch (InterruptedException e) {

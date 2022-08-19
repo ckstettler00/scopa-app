@@ -6,16 +6,16 @@ import com.stettler.scopa.model.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.assertj.core.api.Java6Assertions.assertThatThrownBy;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.times;
 
 public class GameControlTest {
     Logger logger = LoggerFactory.getLogger(getClass().getName());
@@ -48,6 +48,12 @@ public class GameControlTest {
 
     @BeforeEach
     void setup() {
+
+        control = new GameControl();
+        player1 = new TestSource();
+        player2 = new TestSource();
+
+
         control.registerPlayer1Source(player1);
         control.registerPlayer2Source(player2);
         player1.start();
@@ -140,23 +146,259 @@ public class GameControlTest {
     }
 
     @Test
-    void testPlayOutOfTurn() {
-        assert(false);
+    void testPlayOutOfTurn() throws Exception {
+        newGameAndRegistration();
+        control.gameplay.tableCards = new ArrayList<>(Arrays.asList(new Card(1, Suit.COINS), new Card(2, Suit.COINS),
+                new Card(3, Suit.COINS), new Card(4, Suit.COINS)));
+        control.gameplay.player1.hand = new ArrayList<>(Arrays.asList(new Card(1, Suit.CUPS), new Card(2, Suit.CUPS)));
+        control.gameplay.player2.hand = new ArrayList<>(Arrays.asList(new Card(2, Suit.SWORDS), new Card(1, Suit.SWORDS)));
+
+        // Should be player 1s turn
+        assertThat(control.currentState).isEqualTo(State.WAIT_4_PLAYER1_MOVE);
+
+        // Player 1 is up but player2 is playing
+        triggerEvent(control, new PlayResponseEvent(player2Id, new Pickup(new Card(1, Suit.SWORDS),
+                new ArrayList<>(Arrays.asList(new Card(1, Suit.COINS))))));
+
+        // Player2 will receive error for playing out of turn.
+        assertThat(player2.getEvents().get(0)).isInstanceOf(ErrorEvent.class);
+        ErrorEvent error = (ErrorEvent) player2.getEvents().get(0);
+        assertThat(error.getMessage()).contains("Played out of turn");
+
+        // Should be player 1s turn still.
+        assertThat(control.currentState).isEqualTo(State.WAIT_4_PLAYER1_MOVE);
+
+        // Player 1 is up so play a card.
+        triggerEvent(control, new PlayResponseEvent(player1Id, new Pickup(new Card(1, Suit.CUPS),
+                new ArrayList<>(Arrays.asList(new Card(1, Suit.COINS))))));
+
+        // Should be player 2s turn
+        assertThat(control.currentState).isEqualTo(State.WAIT_4_PLAYER2_MOVE);
+
+        // Player 2 is up but let player1 try to play.
+        triggerEvent(control, new PlayResponseEvent(player1Id, new Pickup(new Card(1, Suit.CUPS),
+                new ArrayList<>(Arrays.asList(new Card(1, Suit.COINS))))));
+
+        // Player 1 will get an illegal play error.
+        assertThat(player1.getEvents().get(0)).isInstanceOf(ErrorEvent.class);
+        error = (ErrorEvent) player1.getEvents().get(0);
+        assertThat(error.getMessage()).contains("Played out of turn");
+
+        // Player 2 is still up.
+        assertThat(control.currentState).isEqualTo(State.WAIT_4_PLAYER2_MOVE);
+
+        // Make a valid player 2 play
+        triggerEvent(control, new PlayResponseEvent(player2Id, new Pickup(new Card(2, Suit.SWORDS),
+                new ArrayList<>(Arrays.asList(new Card(2, Suit.COINS))))));
+
+        // Should be player 1s turn
+        assertThat(control.currentState).isEqualTo(State.WAIT_4_PLAYER1_MOVE);
+
+        assertThat(this.control.turnCounter).isEqualTo(2);
+        assertThat(this.control.player1.getHand()).hasSize(1);
+        assertThat(this.control.player2.getHand()).hasSize(1);
+
     }
 
     @Test
-    void testEndOfRound() {
-        assert(false);
+    void testEndOfRound() throws Exception {
+        newGameAndRegistration();
+
+        // Should register as the 0th round.
+        assertThat(control.roundCounter).isEqualTo(0);
+
+        // Remove cards to the last 6 cards.  Almost end of round.
+        for (int i = 0; i < 24; i++) {
+            control.gameplay.deck.draw();
+        }
+
+        assertThat(control.gameplay.deck.size()).isEqualTo(6);
+
+        // Setup the table with some cards.
+        control.gameplay.tableCards = new ArrayList<>(Arrays.asList(new Card(1, Suit.COINS), new Card(6, Suit.CUPS),
+                new Card(6, Suit.COINS), new Card(7, Suit.COINS)));
+
+        // Setup player cards so they each player has one card left.
+        control.gameplay.player1.hand = new ArrayList<>(Arrays.asList(new Card(1, Suit.CUPS)));
+        control.gameplay.player2.hand = new ArrayList<>(Arrays.asList(new Card(5, Suit.SWORDS)));
+
+        // Play1 plays a pickup
+        triggerEvent(control, new PlayResponseEvent(player1Id, new Pickup(new Card(1, Suit.CUPS),
+                Arrays.asList(new Card(1, Suit.COINS)))));
+        assertThat(player1.getEvents().get(0)).isInstanceOf(GameStatusEvent.class);
+
+        // Confirming the move is player2 before proceeding.
+        assertThat(this.control.currentState).isEqualTo(State.WAIT_4_PLAYER2_MOVE);
+
+        // Player2 playing a discard.
+        triggerEvent(control, new PlayResponseEvent(player2Id, new Discard(new Card(5, Suit.SWORDS))));
+        assertThat(player2.getEvents().get(0)).isInstanceOf(GameStatusEvent.class);
+
+        // The last 6 cards should  have been dealt.
+        assertThat(this.control.gameplay.deck.size()).isEqualTo(0);
+        assertThat(this.control.gameplay.player1.getHand()).hasSize(3);
+        assertThat(this.control.gameplay.player2.getHand()).hasSize(3);
+
+        // Change the cards to known values to make testing easier.
+        control.gameplay.player1.hand = new ArrayList<>();
+        control.gameplay.player2.hand = new ArrayList<>();
+        for (int i = 8; i < 11; i++) {
+            control.gameplay.player1.hand.add(new Card(i, Suit.CUPS));
+            control.gameplay.player2.hand.add(new Card(i, Suit.SWORDS));
+        }
+
+        // this should be a safe discard for player1
+        triggerEvent(control, new PlayResponseEvent(player1Id, new Discard(new Card(10, Suit.CUPS))));
+        assertThat(this.player1.getEvents().get(0)).isInstanceOf(GameStatusEvent.class);
+        assertThat(this.control.currentState).isEqualTo(State.WAIT_4_PLAYER2_MOVE);
+
+        // this should be a safe discard for player2
+        triggerEvent(control, new PlayResponseEvent(player2Id, new Discard(new Card(8, Suit.SWORDS))));
+        assertThat(this.player2.getEvents().get(0)).isInstanceOf(GameStatusEvent.class);
+        assertThat(this.control.currentState).isEqualTo(State.WAIT_4_PLAYER1_MOVE);
+
+        // this should be another safe discard for player1
+        triggerEvent(control, new PlayResponseEvent(player1Id, new Discard(new Card(9, Suit.CUPS))));
+        assertThat(this.player1.getEvents().get(0)).isInstanceOf(GameStatusEvent.class);
+        assertThat(this.control.currentState).isEqualTo(State.WAIT_4_PLAYER2_MOVE);
+
+        // player 2 will pickup the 11 that player1 layed down.
+        triggerEvent(control, new PlayResponseEvent(player2Id, new Pickup(new Card(9, Suit.SWORDS),
+                Arrays.asList(new Card(9, Suit.CUPS)))));
+        assertThat(this.control.currentState).isEqualTo(State.WAIT_4_PLAYER1_MOVE);
+        assertThat(this.player2.getEvents().get(0)).isInstanceOf(GameStatusEvent.class);
+
+        // Player1 should be able to pick up the 10 of sword layed down by player2
+        triggerEvent(control, new PlayResponseEvent(player1Id, new Pickup(new Card(8, Suit.CUPS),
+                Arrays.asList(new Card(8, Suit.SWORDS)))));
+        assertThat(this.player1.getEvents().get(0)).isInstanceOf(GameStatusEvent.class);
+        assertThat(this.control.currentState).isEqualTo(State.WAIT_4_PLAYER2_MOVE);
+
+        // player 2 should have a final safe discard
+        triggerEvent(control, new PlayResponseEvent(player2Id, new Pickup(new Card(10, Suit.SWORDS),
+                Arrays.asList(new Card(10, Suit.CUPS)))));
+        assertThat(this.player2.getEvents().get(0)).isInstanceOf(GameStatusEvent.class);
+
+        // The round should have incremented.
+        assertThat(this.control.roundCounter).isEqualTo(1);
+
+        // Confirming the move is player2 before proceeding.
+        // the first player changes with each round.  Should be player2 now.
+        assertThat(this.control.currentState).isEqualTo(State.WAIT_4_PLAYER2_MOVE);
+
+        // A new set of table cards would be dealt.
+        assertThat(this.control.gameplay.tableCards).hasSize(4);
+
+        // Deck would have re-dealt
+        assertThat(this.control.gameplay.deck.size()).isEqualTo(30);
+        assertThat(this.control.gameplay.player1.getHand()).hasSize(3);
+        assertThat(this.control.gameplay.player2.getHand()).hasSize(3);
+
+        // Confirm player 1 got the credit for the table cards.
+
+    }
+
+    /**
+     * You can send the game on a scopa but the point does not count.
+     */
+    @Test
+    void testEndOfRoundScopaDoesNotCount() {
+        assert (false);
+    }
+
+    @Test
+    void testEndOfRoundLastTrickLogicPlayer2() throws Exception {
+        newGameAndRegistration();
+
+        // Empty deck to simulate drawing cards.
+        while (this.control.gameplay.deck.hasNext()) {
+            this.control.gameplay.deck.draw();
+        }
+
+        // Setup some coins to be on the table.
+        this.control.gameplay.tableCards = new ArrayList<>(Arrays.asList(new Card(1, Suit.COINS),
+                new Card(2, Suit.COINS), new Card(7, Suit.COINS), new Card(1, Suit.SWORDS)));
+
+        Player player2Spy = Mockito.spy(this.control.player2);
+        this.control.player2 = player2Spy;
+
+        // Setup to look like player 2 move.
+        this.control.changeState(State.WAIT_4_PLAYER2_MOVE);
+        assertThat(this.control.player2.getCoins()).isEqualTo(0);
+        assertThat(this.control.player2.isSevenCoins()).isFalse();
+
+        // Put one card in player2 hand and zero in player 1 to simulate last card of the round.
+        this.control.player2.hand = new ArrayList<>(Arrays.asList(new Card(1, Suit.CUPS)));
+        this.control.player1.hand = new ArrayList<>();
+
+        // Play the card.
+        this.control.handlePlayResponse(new PlayResponseEvent(player2Id, new Pickup(new Card(1, Suit.CUPS),
+                Arrays.asList(new Card(1, Suit.SWORDS)))));
+
+        // There is some back ground threading that needs to happen
+        // so cheat and sleep a little.
+        Thread.sleep(500);
+
+        assertThat(this.player2.getEvents().get(0)).isInstanceOf(GameStatusEvent.class);
+
+        assertThat(this.control.roundCounter).isEqualTo(1);
+        Mockito.verify(player2Spy, times(1)).play(Optional.of(new Card(1, Suit.CUPS)),
+                Arrays.asList(new Card(1, Suit.SWORDS)));
+        Mockito.verify(player2Spy, times(1)).play(Optional.empty(),
+                Arrays.asList(new Card(1, Suit.COINS),
+                        new Card(2, Suit.COINS), new Card(7, Suit.COINS)));
+
+    }
+
+    @Test
+    void testEndOfRoundLastTrickLogicPlayer1() throws Exception {
+        newGameAndRegistration();
+
+        // Empty deck to simulate drawing cards.
+        while (this.control.gameplay.deck.hasNext()) {
+            this.control.gameplay.deck.draw();
+        }
+
+        // Setup some coins to be on the table.
+        this.control.gameplay.tableCards = new ArrayList<>(Arrays.asList(new Card(1, Suit.COINS),
+                new Card(2, Suit.COINS), new Card(7, Suit.COINS), new Card(1, Suit.SWORDS)));
+
+        Player player1Spy = Mockito.spy(this.control.player1);
+        this.control.player1 = player1Spy;
+
+        // Setup to look like player 1 move.
+        this.control.changeState(State.WAIT_4_PLAYER1_MOVE);
+        assertThat(this.control.player2.getCoins()).isEqualTo(0);
+        assertThat(this.control.player2.isSevenCoins()).isFalse();
+
+        // Put one card in player2 hand and zero in player 1 to simulate last card of the round.
+        this.control.player1.hand = new ArrayList<>(Arrays.asList(new Card(1, Suit.CUPS)));
+        this.control.player2.hand = new ArrayList<>();
+
+        // Play the card.
+        this.control.handlePlayResponse(new PlayResponseEvent(player1Id, new Pickup(new Card(1, Suit.CUPS),
+                Arrays.asList(new Card(1, Suit.SWORDS)))));
+
+        Thread.sleep(500);
+        assertThat(this.player1.getEvents().get(0)).isInstanceOf(GameStatusEvent.class);
+
+        assertThat(this.control.roundCounter).isEqualTo(1);
+        Mockito.verify(player1Spy, times(1)).play(Optional.of(new Card(1, Suit.CUPS)),
+                Arrays.asList(new Card(1, Suit.SWORDS)));
+        Mockito.verify(player1Spy, times(1)).play(Optional.empty(),
+                Arrays.asList(new Card(1, Suit.COINS),
+                        new Card(2, Suit.COINS), new Card(7, Suit.COINS)));
+
     }
 
     @Test
     void testEndOfGame() {
-        assert(false);
+        assert (false);
     }
 
     @Test
     void testTieGame() {
-        assert(false);
+        assert (false);
     }
 
     @Test

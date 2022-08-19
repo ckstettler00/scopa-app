@@ -69,7 +69,7 @@ public class Deck {
     }
 
     public boolean hasNext(){
-        return (index < 39);
+        return (index < 40);
     }
 
     public int size(){
