@@ -39,22 +39,19 @@ public class Player {
 
         for(int i = 0; i < collection.size(); i++){
             this.total++;
-            if(collection.get(i).getSuit() == Suit.COINS){
+            if (collection.get(i).getSuit() == Suit.COINS) {
                 this.coins++;
-                if(collection.get(i).getVal() == 7){
+                if (collection.get(i).getVal() == 7) {
                     sevenCoins = true;
                 }
             }
-            if(collection.get(i).getSuit() == Suit.COINS && collection.get(i).getVal() > primesCoin ){
+            if (collection.get(i).getSuit() == Suit.COINS && collection.get(i).getPrime() > primesCoin) {
                 primesCoin = collection.get(i).getPrime();
-            }
-            else if(collection.get(i).getSuit() == Suit.SCEPTERS && collection.get(i).getVal() > primesScepter ){
+            } else if (collection.get(i).getSuit() == Suit.SCEPTERS && collection.get(i).getPrime() > primesScepter) {
                 primesScepter = collection.get(i).getPrime();
-            }
-            else if(collection.get(i).getSuit() == Suit.SWORDS && collection.get(i).getVal() > primesSwords ){
+            } else if (collection.get(i).getSuit() == Suit.SWORDS && collection.get(i).getPrime() > primesSwords) {
                 primesSwords = collection.get(i).getPrime();
-            }
-            else if(collection.get(i).getSuit() == Suit.CUPS && collection.get(i).getVal() > primesCups ){
+            } else if (collection.get(i).getSuit() == Suit.CUPS && collection.get(i).getPrime() > primesCups) {
                 primesCups = collection.get(i).getPrime();
             }
 

@@ -12,12 +12,6 @@ public class Gameplay {
 
     Logger logger = LoggerFactory.getLogger(getClass().getName());
     Deck deck = new Deck();
-    Player player1 = new Player();
-    Player player2 = new Player();
-    Player currentPlayer;
-
-    Display table = new Display();
-    int lastTrick = 0;
 
     public List<Card> getTableCards() {
         List<Card> tmp = new ArrayList<>();
@@ -61,95 +55,6 @@ public class Gameplay {
     public void deal(Player player) {
         player.deal(deck.draw());
     }
-
-//    void playTheGame() {
-//
-//        int turnCount = 0;
-//        int playedCard = 0;
-//        int roundCount = 0;
-//        String pickup;
-//
-//
-//        while (!winner()) {
-//
-//            for (int i = 0; i < 4; i++) {
-//                tableCards.add(deck.draw());
-//            }
-//
-//            while (deck.hasNext()) {
-//
-//                turnCount = 0;
-//
-//
-//                for (int i = 0; i < 3; i++) {
-//                    player1.deal(deck.draw());
-//                    player2.deal(deck.draw());
-//                }
-//
-//                while (turnCount < 6) {
-//
-//                    if (roundCount % 2 == 0) {
-//                        table.clearScreen();
-//                        player1First(turnCount);
-//                    } else {
-//                        table.clearScreen();
-//                        player2First(turnCount);
-//                    }
-//
-//                    Move move = Move.INVALID;
-//                    System.out.println("It is " + currentPlayer.getDetails().getScreenHandle() + "'s turn.");
-//                    while (move.equals(Move.INVALID)) {
-//                        Scanner input = new Scanner(System.in);
-//                        System.out.println("Play: ");
-//                        try {
-//                            playedCard = input.nextInt();
-//                            input.nextLine();
-//                        } catch (InputMismatchException ex) {
-//                            System.out.println("Please use position numbers to play a card.");
-//                            continue;
-//                        }
-//
-//                        System.out.println("For: ");
-//                        pickup = input.nextLine();
-//
-//                        move = createMoveCommand(playedCard, Arrays.asList(pickup.split("\\s+")));
-//                    }
-//                    if (tableCards.isEmpty()) {
-//                        currentPlayer.setScore(currentPlayer.getScore() + 1);
-//                        System.out.println(currentPlayer.getDetails().getScreenHandle() + " got a Scopa!");
-//                    }
-//                    turnCount++;
-//                }
-//            }
-//            if (!tableCards.isEmpty()) {
-//                if (lastTrick == 1) {
-//                    player1.play(Optional.empty(), tableCards);
-//                    tableCards.clear();
-//                } else {
-//                    player2.play(Optional.empty(), tableCards);
-//                    tableCards.clear();
-//                }
-//            }
-//
-//            if (player1.getPrimesSum() > player2.getPrimesSum()) {
-//                player1.setScore(player1.getScore() + 1);
-//            } else if (player1.getPrimesSum() < player2.getPrimesSum()) {
-//                player2.setScore(player2.getScore() + 1);
-//            }
-//            scoring(player1);
-//            scoring(player2);
-//
-//            System.out.println("At the end of round " + (roundCount + 1) + " the  score is:");
-//            System.out.println(player1.getDetails().getScreenHandle() + " " + player1.getScore());
-//            System.out.println(player2.getDetails().getScreenHandle() + " " + player2.getScore());
-//
-//            deck = new Deck();
-//            roundCount++;
-//        }
-//
-//        System.out.println("It looks like we have a winner! Yay David! The final score is " + player1.getDetails().getScreenHandle() + " " + player1.getScore() + " and " + player2.getDetails().getScreenHandle() + " " + player2.getScore());
-//
-//    }
 
     public Move handlePickup(Player player, Pickup pickup) {
 
@@ -197,6 +102,18 @@ public class Gameplay {
 
     }
 
+    public void trackScore(Player p1, Player p2, Player lastTrick) {
+        lastTrick.play(Optional.empty(), this.getTableCards());
+
+        if (p1.getPrimesSum() > p2.getPrimesSum()) {
+            p1.setScore(p1.getScore() + 1);
+        } else if (p1.getPrimesSum() < p2.getPrimesSum()) {
+            p2.setScore(p2.getScore() + 1);
+        }
+        this.scoring(p1);
+        this.scoring(p2);
+    }
+
     public void scoring(Player p) {
         if (p.getTotal() > 20) {
             p.setScore(p.getScore() + 1);
@@ -211,11 +128,11 @@ public class Gameplay {
 
     }
 
-    public boolean winner() {
-        if (player1.getScore() == player2.getScore()) {
+    public boolean winner(Player p1, Player p2) {
+        if (p1.getScore() == p2.getScore()) {
             return false;
         }
-        if (player1.getScore() >= 11 || player2.getScore() >= 11) {
+        if (p1.getScore() >= 11 || p2.getScore() >= 11) {
             return true;
         } else {
             return false;
@@ -276,13 +193,5 @@ public class Gameplay {
         if (solution.size() == counters.length && solution.stream().mapToInt(c -> c.getVal()).sum() == sumToMatch) {
             allSets.add(solution);
         }
-    }
-
-    public Player getPlayer1() {
-        return player1;
-    }
-
-    public Player getPlayer2() {
-        return player2;
     }
 }

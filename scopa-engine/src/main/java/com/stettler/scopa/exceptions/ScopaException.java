@@ -20,6 +20,11 @@ public class ScopaException extends RuntimeException {
         this.playerId = playerId;
     }
 
+    public ScopaException(String message) {
+        super(message);
+        this.playerId = Player.ALL;
+    }
+
     public ScopaException(String playerId, String message, Throwable cause) {
         super(message, cause);
         this.playerId = playerId;

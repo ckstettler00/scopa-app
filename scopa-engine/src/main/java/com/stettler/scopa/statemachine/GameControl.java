@@ -207,17 +207,10 @@ public class GameControl extends EventSource {
             logger.info("Hand was complete. Deck length {}", this.gameplay.getDeck().size());
             if (this.gameplay.getDeck().size() == 0) {
                 logger.info("Detected end of round {}", roundCounter);
-                if (player1.getPrimesSum() > player2.getPrimesSum()) {
-                    player1.setScore(player1.getScore() + 1);
-                } else if (player1.getPrimesSum() < player2.getPrimesSum()) {
-                    player2.setScore(player2.getScore() + 1);
-                }
-                lastTrickPlayer.play(Optional.empty(), this.gameplay.getTableCards());
 
-                this.gameplay.scoring(player1);
-                this.gameplay.scoring(player2);
+                this.gameplay.trackScore(player1, player2, lastTrickPlayer);
 
-                if (this.gameplay.winner()) {
+                if (this.gameplay.winner(player1, player2)) {
                     logger.info("Detected a winner.");
                     changeState(State.WINNER);
                 } else {
@@ -296,15 +289,15 @@ public class GameControl extends EventSource {
         }
 
         if (currentState.equals(State.WAIT_FOR_PLAYER1)) {
-            player1 = this.gameplay.getPlayer1();
-            player1.setDetails(((RegisterEvent)event).getDetails());
+            player1 = new Player();
+            player1.setDetails(((RegisterEvent) event).getDetails());
             changeState(State.WAIT_FOR_PLAYER2);
             return;
         }
 
         if (currentState.equals(State.WAIT_FOR_PLAYER2)) {
-            player2 = this.gameplay.getPlayer2();
-            player2.setDetails(((RegisterEvent)event).getDetails());
+            player2 = new Player();
+            player2.setDetails(((RegisterEvent) event).getDetails());
             changeState(State.START_ROUND);
             this.triggerEvent(new StartRoundEvent());
             return;
