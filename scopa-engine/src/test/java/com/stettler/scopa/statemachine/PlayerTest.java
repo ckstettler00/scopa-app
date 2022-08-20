@@ -1,8 +1,11 @@
 package com.stettler.scopa.statemachine;
 
 import com.stettler.scopa.model.Card;
+import com.stettler.scopa.model.PlayerDetails;
 import com.stettler.scopa.model.Suit;
 import org.junit.jupiter.api.Test;
+import org.junit.platform.commons.util.ReflectionUtils;
+import org.powermock.reflect.Whitebox;
 
 import java.util.*;
 
@@ -68,4 +71,101 @@ public class PlayerTest {
             }
         }
     }
+
+    @Test
+    void testDeal() {
+        Player p = new Player();
+        for (Suit s : Suit.values()) {
+            p.deal(new Card(1, s));
+        }
+        assertThat(p.getHand()).hasSize(4);
+    }
+    @Test
+    void testPlayPickupAllCoins() {
+
+        Player p = new Player();
+        for (int i = 0; i < 10; i++) {
+            Card c = new Card(i+1, Suit.COINS);
+            p.deal(c);
+            p.play(Optional.of(c), Arrays.asList(new Card(i+1, Suit.SCEPTERS)));
+
+            assertThat(p.getCoins()).isEqualTo(i+1);
+            assertThat(p.getScore()).isEqualTo(0);
+            assertThat(p.getTotal()).isEqualTo((i+1)*2);
+            assertThat(p.getHand()).hasSize(0);
+        }
+
+    }
+    @Test
+    void testPlayOptionalAllCoins() {
+
+        Player p = new Player();
+        p.deal(new Card(1, Suit.SCEPTERS));
+        for (int i = 0; i < 10; i++) {
+            p.play(Optional.empty(), Arrays.asList(new Card(i+1, Suit.COINS)));
+
+            assertThat(p.getCoins()).isEqualTo(i+1);
+            assertThat(p.getScore()).isEqualTo(0);
+            assertThat(p.getTotal()).isEqualTo(i+1);
+            assertThat(p.getHand()).hasSize(1);
+
+        }
+
+    }
+    @Test
+    void testPlaySevenCoinsLogic() {
+
+        Player p = new Player();
+
+        for (int i = 0; i < 10; i++) {
+            p.play(Optional.empty(), Arrays.asList(new Card(i+1, Suit.SWORDS)));
+            p.play(Optional.empty(), Arrays.asList(new Card(i+1, Suit.CUPS)));
+            p.play(Optional.empty(), Arrays.asList(new Card(i+1, Suit.SCEPTERS)));
+
+            if (i+1 != 7) {
+                p.play(Optional.empty(), Arrays.asList(new Card(i + 1, Suit.COINS)));
+            }
+        }
+        //Confirm no other card triggered this.
+        assertThat(p.isSevenCoins()).isFalse();
+
+        //Confirm 7 of COIN does trigger it.
+        p.play(Optional.empty(), Arrays.asList(new Card(7, Suit.COINS)));
+        assertThat(p.isSevenCoins()).isTrue();
+
+    }
+    @Test
+    void testDetails() {
+        PlayerDetails d = new PlayerDetails();
+        Player p = new Player();
+        p.setDetails(d);
+        assertThat(d).isEqualTo(p.getDetails());
+    }
+
+    @Test
+    void testClearScore() {
+        Player  p = new Player();
+        Whitebox.setInternalState(p,"score",10);
+        Whitebox.setInternalState(p,"coins",1);
+        Whitebox.setInternalState(p,"total",2);
+        Whitebox.setInternalState(p,"sevenCoins",true);
+        Whitebox.setInternalState(p,"primesCoin",7);
+        Whitebox.setInternalState(p,"primesScepter",4);
+        Whitebox.setInternalState(p,"primesCups",5);
+        Whitebox.setInternalState(p,"primesSwords",6);
+
+        assertThat(p.getScore()).isEqualTo(10);
+        assertThat(p.getTotal()).isEqualTo(2);
+        assertThat(p.isSevenCoins()).isTrue();
+        assertThat(p.getPrimesSum()).isEqualTo(7+4+5+6);
+
+        p.clearScore();
+
+        assertThat(p.getScore()).isEqualTo(10);
+        assertThat(p.getTotal()).isEqualTo(0);
+        assertThat(p.isSevenCoins()).isFalse();
+        assertThat(p.getPrimesSum()).isEqualTo(0);
+
+    }
+
 }
