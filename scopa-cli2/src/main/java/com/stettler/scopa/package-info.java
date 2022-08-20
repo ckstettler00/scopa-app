@@ -1,0 +1,1 @@
+package com.stettler.scopa;
