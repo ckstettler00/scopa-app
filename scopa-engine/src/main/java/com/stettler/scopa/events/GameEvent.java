@@ -4,7 +4,7 @@ import com.stettler.scopa.statemachine.Player;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 public abstract class GameEvent {
-    EventType type = EventType.NOOP;
+    EventType eventType = EventType.NOOP;
 
     private String playerId;
 
@@ -28,10 +28,10 @@ public abstract class GameEvent {
     }
     protected GameEvent(String playerId, EventType type) {
         this.playerId = playerId;
-        this.type = type;
+        this.eventType = type;
     }
     public EventType getEventType() {
-        return this.type;
+        return this.eventType;
     }
 
     @Override
