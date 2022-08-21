@@ -7,7 +7,8 @@ public abstract class Move {
     MoveType type = MoveType.INVALID;
     static public Move INVALID = new Invalid();
 
-    private Move() {}
+    public Move() {
+    }
 
     public Move(MoveType type) {
         this.type = type;

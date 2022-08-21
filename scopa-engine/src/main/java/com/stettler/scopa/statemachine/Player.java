@@ -15,8 +15,6 @@ public class Player {
 
     private PlayerDetails details;
     List<Card> hand = new ArrayList<>();
-
-    private List<Card> prime = new ArrayList<>();
     private int coins = 0;
     private int total = 0;
     private boolean sevenCoins = false;

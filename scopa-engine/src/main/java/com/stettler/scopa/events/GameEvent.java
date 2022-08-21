@@ -4,9 +4,13 @@ import com.stettler.scopa.statemachine.Player;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 public abstract class GameEvent {
-    EventType type=EventType.NOOP;
+    EventType type = EventType.NOOP;
 
     private String playerId;
+
+    public GameEvent() {
+
+    }
 
     public String getPlayerId() {
         return playerId;

@@ -7,6 +7,11 @@ import com.stettler.scopa.model.MoveType;
 public class PlayResponseEvent extends GameEvent {
 
     private Move move;
+
+    public PlayResponseEvent() {
+        super();
+    }
+
     public PlayResponseEvent(String playerId, Move move) {
         super(playerId, EventType.PLAY_RESP);
         this.move = move;

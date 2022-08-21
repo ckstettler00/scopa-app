@@ -14,6 +14,9 @@ public class GameStatus {
 
     private List<Card> table;
 
+    public GameStatus() {
+    }
+
     public String getGameId() {
         return gameId;
     }

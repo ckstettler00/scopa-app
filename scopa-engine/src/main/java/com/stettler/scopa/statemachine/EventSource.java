@@ -2,10 +2,11 @@ package com.stettler.scopa.statemachine;
 
 import com.stettler.scopa.events.*;
 import com.stettler.scopa.exceptions.ScopaException;
-import com.stettler.scopa.model.PlayerDetails;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -13,16 +14,17 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-public abstract class EventSource
-{
+public abstract class EventSource {
     String eventLoopId = UUID.randomUUID().toString();
     Logger logger = LoggerFactory.getLogger(getClass().getName());
+
+    private List<GameEventListener> listeners = new ArrayList<>();
 
     private LinkedBlockingQueue<GameEvent> eventSource = new LinkedBlockingQueue<>(100);
 
     private Map<EventType, Consumer<GameEvent>> handlers = new ConcurrentHashMap<>();
 
-    Thread eventLoop = new Thread(this::run, "event-loop-"+eventLoopId);
+    Thread eventLoop = new Thread(this::run, "event-loop-" + eventLoopId);
     boolean done = false;
 
     public GameEvent nextEvent() {
@@ -33,6 +35,9 @@ public abstract class EventSource
         {
             try {
                 event = eventSource.poll(3, TimeUnit.SECONDS);
+                if (event != null) {
+                    notifyAll(event);
+                }
             } catch (InterruptedException e) {
                 //NOOP
             }
@@ -111,6 +116,18 @@ public abstract class EventSource
 
     public void handleException(Exception ex) {
         //Eat the exception
+    }
+
+    public void addListener(GameEventListener listener) {
+        this.listeners.add(listener);
+    }
+
+    private void notifyAll(final GameEvent event) {
+        try {
+            this.listeners.forEach(n -> n.notify(event));
+        } catch (Exception e) {
+            logger.error("Notification failed and ignored", e);
+        }
     }
 
 }
