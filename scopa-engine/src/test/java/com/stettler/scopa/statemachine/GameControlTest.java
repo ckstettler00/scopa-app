@@ -64,16 +64,17 @@ public class GameControlTest {
     @Test
     void testEmptyHands() throws Exception {
         newGameAndRegistration();
-        control.gameplay.tableCards = new ArrayList<>(Arrays.asList(new Card(1, Suit.COINS), new Card(2, Suit.COINS),
-                new Card(3, Suit.COINS), new Card(4, Suit.COINS)));
-        control.player1.hand = new ArrayList<>(Arrays.asList(new Card(1, Suit.CUPS)));
-        control.player2.hand = new ArrayList<>(Arrays.asList(new Card(2, Suit.SWORDS)));
 
         // Verify counters and score before sending first event
         assertThat(control.gameplay.deck.size()).isEqualTo(30);
         assertThat(control.roundCounter).isEqualTo(0);
         assertThat(control.player1.getScore()).isEqualTo(0);
         assertThat(control.player2.getScore()).isEqualTo(0);
+
+        control.gameplay.tableCards = new ArrayList<>(Arrays.asList(new Card(1, Suit.COINS), new Card(2, Suit.COINS),
+                new Card(3, Suit.COINS), new Card(4, Suit.COINS)));
+        control.player1.hand = new ArrayList<>(Arrays.asList(new Card(1, Suit.CUPS)));
+        control.player2.hand = new ArrayList<>(Arrays.asList(new Card(2, Suit.SWORDS)));
 
         // Player 1 uses last card.
         triggerEvent(control, new PlayResponseEvent(player1Id, new Pickup(new Card(1, Suit.CUPS),
@@ -226,7 +227,7 @@ public class GameControlTest {
     }
 
     /**
-     * You can send the game on a scopa but the point does not count.
+     * You can end the game on a scopa but the point does not count.
      */
     @Test
     void testEndOfRoundScopaDoesNotCount() {
