@@ -1,27 +1,25 @@
 package com.stettler.scopa.statemachine;
 
-import com.stettler.scopa.exceptions.*;
 import com.stettler.scopa.events.*;
+import com.stettler.scopa.exceptions.*;
 import com.stettler.scopa.model.*;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
-public class GameControl extends EventSource {
+public class GameControl2 {
 
+    private Integer MAX_PLAYERS = 2;
     private String gameId = UUID.randomUUID().toString();
     Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
-    State currentState;
+    Map<String, Pair<Player, EventSource>> playerMap = new ConcurrentHashMap<>();
 
-    Map<EventType, Consumer<GameEvent>> handlers = new ConcurrentHashMap<>();
+    State currentState;
 
     EventSource player1Source=null;
     EventSource player2Source=null;
@@ -52,28 +50,15 @@ public class GameControl extends EventSource {
      * Register the player with the game controller.
      * @param source
      */
-    public void registerPlayer1Source(EventSource source) {
+    public void registerPlayer(PlayerDetails player, EventSource source) {
         logger.info("Registering Player1 event source. {}", source);
-        this.player1Source = source;
+
     }
 
-    /**
-     * Register the player2 with the game controller.
-     * @param source
-     */
-    public void registerPlayer2Source(EventSource source) {
-        logger.info("Registering Player2 event source. {}", source);
-        this.player2Source = source;
-    }
 
-    public GameControl() {
+    public GameControl2() {
         logger.info("Creating new game controller - id {}", gameId);
         currentState = State.INIT;
-        this.addHandler(EventType.REGISTER, this::handleRegister);
-        this.addHandler(EventType.NEWGAME, this::handleNewGame);
-        this.addHandler(EventType.START_ROUND, this::handleStartRound);
-        this.addHandler(EventType.PLAY_RESP, this::handlePlayResponse);
-        this.addHandler(EventType.GAMEOVER, this::handleGameOver);
     }
 
     public String getGameId() {
