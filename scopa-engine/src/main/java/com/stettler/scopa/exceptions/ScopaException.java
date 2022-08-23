@@ -2,7 +2,7 @@ package com.stettler.scopa.exceptions;
 
 import com.stettler.scopa.statemachine.Player;
 
-public class ScopaException extends RuntimeException {
+public class ScopaException extends ScopaRuntimeException {
 
     String playerId;
 
@@ -32,11 +32,6 @@ public class ScopaException extends RuntimeException {
 
     public ScopaException(String playerId, Throwable cause) {
         super(cause);
-        this.playerId = playerId;
-    }
-
-    protected ScopaException(String playerId, String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-        super(message, cause, enableSuppression, writableStackTrace);
         this.playerId = playerId;
     }
 }

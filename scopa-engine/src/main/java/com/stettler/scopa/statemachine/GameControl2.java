@@ -18,23 +18,25 @@ public class GameControl2 {
     Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
     Map<String, Pair<Player, EventSource>> playerMap = new ConcurrentHashMap<>();
+    List<Player> playerOrder = new ArrayList<>();
 
     State currentState;
 
-    EventSource player1Source=null;
-    EventSource player2Source=null;
-    Player player1 = null;
-    Player player2 = null;
     Player currentPlayer = null;
     EventSource currentPlayerSource = null;
 
     Player lastTrickPlayer = null;
     int turnCounter = -1;
-    int roundCounter= -1;
+    int roundCounter = -1;
 
-    Gameplay gameplay = null;
+    Gameplay gameplay = new Gameplay();
 
-    public GameStatus getStatus(Player player) {
+    public GameControl2() {
+        logger.info("Creating new game controller - id {}", gameId);
+        currentState = State.INIT;
+    }
+
+    synchronized public GameStatus getStatus(Player player) {
         GameStatus status = new GameStatus();
         status.setGameId(gameId);
         status.setPlayer(player);
@@ -46,83 +48,96 @@ public class GameControl2 {
         }
         return status;
     }
+
     /**
      * Register the player with the game controller.
+     *
      * @param source
      */
-    public void registerPlayer(PlayerDetails player, EventSource source) {
-        logger.info("Registering Player1 event source. {}", source);
+    synchronized public boolean registerPlayer(PlayerDetails details, EventSource source) {
+
+        if (!currentState.equals(State.INIT)) {
+            throw new InvalidStateException("Attempt to register but not in WAIT_FOR_REGISTRATION", this.currentState);
+        }
+
+        logger.info("Registration requested {}", details.toShortString());
+        if (this.playerMap.size() >= MAX_PLAYERS) {
+            logger.error("Game is full {}", playerMap);
+            throw new GameFullException();
+        }
+
+        if (playerMap.get(details.getPlayerId()) != null) {
+            logger.info("{} is already registered", details.toShortString());
+        } else {
+            logger.info("Adding new {}", details.toShortString());
+            Player p = new Player();
+            p.setDetails(details);
+            this.playerMap.put(details.getPlayerId(), Pair.of(p, source));
+            this.playerOrder.add(p);
+        }
+
+        /**
+         * Start the first round.
+         */
+        if (playerMap.size() == 2 && currentState == State.INIT) {
+            this.startRound();
+            return true;
+        } else {
+            logger.info("Current State: {} Game {} is not ready to start. Current # registered is {}",
+                    currentState, this.gameId, this.playerOrder.size());
+            return false;
+        }
 
     }
 
-
-    public GameControl2() {
-        logger.info("Creating new game controller - id {}", gameId);
-        currentState = State.INIT;
-    }
-
+    /**
+     * Returns the system generated unique id of the game.
+     *
+     * @return
+     */
     public String getGameId() {
         return gameId;
     }
 
+
     /**
-     * General event handler.
-     * @param event
+     * Perform state transitions as required.
+     *
+     * @param next
      */
-    @Override
-    public void handleEvent(GameEvent event) {
-        logger.debug("Received event: {} State:{}", event, currentState);
-        super.handleEvent(event);
-    }
-
-    @Override
-    public void handleException(Exception ex) {
-        if (ex instanceof ScopaException) {
-            ScopaException sex = (ScopaException)ex;
-            logger.error("ScopaExcepton:", sex);
-            Pair<Player, EventSource> pair = lookupPlayer(sex.getPlayerId());
-            if (pair != null) {
-                logger.info("Notifying player: {} of the error.", sex.getPlayerId());
-                pair.getRight().triggerEvent(new ErrorEvent(sex.getPlayerId(), ex.getMessage()));
-            }
-
-            if (ex instanceof InvalidMoveException) {
-                logger.error("Re-requesting the player to move: {}", currentPlayer);
-                currentPlayerSource.triggerEvent(new PlayRequestEvent(currentPlayer.getDetails()));
-            }
-        } else {
-            logger.error("Unhandled exception detected", ex);
-        }
-
-    }
-
-    protected void changeState(State next) {
+    synchronized protected void changeState(State next) {
         logger.info("changeState New State: {} Old State:{}", next, currentState);
         if (next.equals(State.WAIT_4_PLAYER1_MOVE)) {
-            setCurrentPlayer(player1, player1Source);
+            setCurrentPlayer(0);
         }
         if (next.equals(State.WAIT_4_PLAYER2_MOVE)) {
-            setCurrentPlayer(player2, player2Source);
+            setCurrentPlayer(1);
         }
         currentState = next;
     }
 
-    protected void setCurrentPlayer(Player player, EventSource source) {
-        logger.info("Play id:{} is now the current player.", player.getDetails().getPlayerId());
-        this.currentPlayer = player;
-        this.currentPlayerSource = source;
+    synchronized protected void setCurrentPlayer(Integer order) {
+        logger.info("Play index:{} is now the current player.", order);
+        Player p = this.playerOrder.get(order);
+
+        logger.info("Current player details {}", p.getDetails());
+        this.currentPlayer = p;
+        this.currentPlayerSource = lookupPlayer(p.getDetails().getPlayerId()).getRight();
     }
 
-    protected Pair<Player, EventSource> lookupPlayer(String id) {
-        if (player1.getDetails().getPlayerId().equals(id)) {
-            return Pair.of(player1, player1Source);
+    synchronized protected Pair<Player, EventSource> lookupPlayer(String id) {
+        Pair<Player, EventSource> p = this.playerMap.get(id);
+        if (p == null) {
+            logger.error("Invalid player lookup requested id: {}", id);
+            throw new PlayerNotFoundException(id);
         }
-        if (player2.getDetails().getPlayerId().equals(id)) {
-            return Pair.of(player2, player2Source);
-        }
-        throw new PlayerNotFoundException(id);
+        return p;
     }
-    protected void handleGameOver(GameEvent event) {
+
+    synchronized protected void gameOver() {
+        changeState(State.WINNER);
+        Player player1 = this.playerOrder.get(0);
+        Player player2 = this.playerOrder.get(1);
 
         GameOverEvent overEvent = new GameOverEvent();
         overEvent.setWinningPlayer(player1.getDetails());
@@ -140,40 +155,43 @@ public class GameControl2 {
         // Send status updates for score.
         sendStatuses();
 
-        // Send game over event
-        player1Source.triggerEvent(overEvent);
-        player2Source.triggerEvent(overEvent);
+        // Send game over event to all players.
+        this.playerMap.forEach((k, v) -> {
+            v.getRight().triggerEvent(overEvent);
+        });
     }
-    protected void handlePlayResponse(GameEvent event) {
-        logger.info("Received play response: {}", event);
-        PlayResponseEvent responseEvent = (PlayResponseEvent)event;
 
-        Pair<Player, EventSource> responsePlayer = lookupPlayer(responseEvent.getPlayerId());
-        logger.debug("Found responsePlayer {}", responsePlayer);
+    synchronized protected void play(String playerId, Move move) {
+        logger.info("Received play from id:{} move:{}", playerId, move);
+
+        Pair<Player, EventSource> responsePlayer = lookupPlayer(playerId);
+        Player player1 = this.playerOrder.get(0);
+        Player player2 = this.playerOrder.get(1);
+        EventSource player1Source = lookupPlayer(player1.getDetails().getPlayerId()).getRight();
+        EventSource player2Source = lookupPlayer(player2.getDetails().getPlayerId()).getRight();
 
         // Check to see if it is a move request from the appropriate player.
-        if (!event.getPlayerId().equals(currentPlayer.getDetails().getPlayerId())) {
+        if (!playerId.equals(currentPlayer.getDetails().getPlayerId())) {
             logger.error("Detected play out of turn.");
-            throw new UnexpectedEventException(event.getPlayerId(),event, "Played out of turn");
+            throw new ScopaException(playerId, "Played out of turn");
         }
 
         // Make sure we are waiting for a player move.
         if (!Arrays.asList(State.WAIT_4_PLAYER1_MOVE, State.WAIT_4_PLAYER2_MOVE).contains(currentState)) {
             logger.error("Detected invalid move for current state {}", currentState);
-            throw new InvalidStateTransitionException(event.getPlayerId(),
-                        currentState, event);
+            throw new InvalidStateException("Move request but not a move date",
+                    currentState);
         }
 
          // Verify and create a move.
-        Move move = ((PlayResponseEvent)event).getMove();
-        if (responseEvent.getMove().getType().equals(MoveType.PICKUP)) {
+        if (move.getType().equals(MoveType.PICKUP)) {
             logger.info("Playing pickup {}", move);
             gameplay.handlePickup(responsePlayer.getLeft(), (Pickup) move);
             lastTrickPlayer = currentPlayer;
 
             // Check for scopa
             if (this.gameplay.getTableCards().isEmpty()) {
-                if (!this.gameplay.getDeck().hasNext() && this.player1.getHand().size() == 0 && this.player2.getHand().size() == 0) {
+                if (!this.gameplay.getDeck().hasNext() && player1.getHand().size() == 0 && player2.getHand().size() == 0) {
                     logger.info("Scopa ended the game, so no point is awarded");
                     currentPlayerSource.triggerEvent(new ScopaEvent(true));
                 } else {
@@ -182,9 +200,9 @@ public class GameControl2 {
                     currentPlayer.setScore(currentPlayer.getScore() + 1);
                 }
             }
-        } else if (responseEvent.getMove().getType().equals(MoveType.DISCARD)){
+        } else if (move.getType().equals(MoveType.DISCARD)) {
             logger.info("Received discard play {}", move);
-            gameplay.handleDiscard(responsePlayer.getLeft(),(Discard) move);
+            gameplay.handleDiscard(responsePlayer.getLeft(), (Discard) move);
         } else {
             // Bad play so re-ask for a valid move.
             logger.error("An invalid play was attempted {}", move);
@@ -196,7 +214,7 @@ public class GameControl2 {
         turnCounter++;
 
         // End of round tallies
-        if (this.player2.getHand().isEmpty() && this.player1.getHand().isEmpty()) {
+        if (player2.getHand().isEmpty() && player1.getHand().isEmpty()) {
             logger.info("Hand was complete. Deck length {}", this.gameplay.getDeck().size());
             if (this.gameplay.getDeck().size() == 0) {
                 logger.info("Detected end of round {}", roundCounter);
@@ -205,11 +223,13 @@ public class GameControl2 {
 
                 if (this.gameplay.winner(player1, player2)) {
                     logger.info("Detected a winner.");
-                    changeState(State.WINNER);
+                    gameOver();
+                    return;
                 } else {
-                    logger.info("Detected end of round.");
+                    logger.info("End of round not the end of game.");
                     // If we have exhausted the deck then trigger end of round
-                    changeState(State.START_ROUND);
+                    startRound();
+                    return;
                 }
 
             } else {
@@ -218,13 +238,7 @@ public class GameControl2 {
             }
         }
 
-        if (currentState.equals(State.WINNER)) {
-            logger.info("Game {} is over sending event.", this.gameId);
-            this.triggerEvent(new GameOverEvent());
-        } else if (currentState.equals(State.START_ROUND)) {
-            logger.info("Sending start round event game {}", this.gameId);
-            this.triggerEvent(new StartRoundEvent());
-        } else if (currentState.equals(State.WAIT_4_PLAYER1_MOVE)) {
+        if (currentState.equals(State.WAIT_4_PLAYER1_MOVE)) {
 
             logger.info("Send status updates and switch to player2");
             // Send a request for player 2 to play.
@@ -241,14 +255,14 @@ public class GameControl2 {
         }
     }
 
-    protected void handleStartRound(GameEvent event) {
-        logger.debug("handleStartRound {}", event);
+    /**
+     * Starts a new game round.  Each round the player that moves first will flip flop.
+     */
+    protected void startRound() {
+
         this.roundCounter++;
 
-        if (!currentState.equals(State.START_ROUND)) {
-            logger.error("Invalid event {} for state: {}", event, currentState);
-            throw new InvalidStateTransitionException(event.getPlayerId(), currentState, event);
-        }
+        logger.info("Staring round {}", this.roundCounter);
 
         this.gameplay.shuffle();
 
@@ -273,40 +287,15 @@ public class GameControl2 {
                 currentPlayer.getDetails().getScreenHandle());
         currentPlayerSource.triggerEvent(new PlayRequestEvent(currentPlayer.getDetails()));
     }
-    protected synchronized void handleRegister(GameEvent event) {
-        logger.debug("handleRegister: {}", event);
-        if (currentState != State.WAIT_FOR_PLAYER1 &&
-        currentState != State.WAIT_FOR_PLAYER2)
-        {
-            throw new InvalidStateTransitionException(event.getPlayerId(), currentState, event);
-        }
 
-        if (currentState.equals(State.WAIT_FOR_PLAYER1)) {
-            player1 = new Player();
-            player1.setDetails(((RegisterEvent) event).getDetails());
-            changeState(State.WAIT_FOR_PLAYER2);
-            return;
-        }
-
-        if (currentState.equals(State.WAIT_FOR_PLAYER2)) {
-            player2 = new Player();
-            player2.setDetails(((RegisterEvent) event).getDetails());
-            changeState(State.START_ROUND);
-            this.triggerEvent(new StartRoundEvent());
-            return;
-        }
-    }
-
-    protected void handleNewGame(GameEvent event) {
-        logger.debug("handleNewGame: {}", event);
-        this.gameplay = new Gameplay();
-        changeState(State.WAIT_FOR_PLAYER1);
-        return;
-    }
-
-    protected void sendStatuses() {
-        player1Source.triggerEvent(new GameStatusEvent(getStatus(player1)));
-        player2Source.triggerEvent(new GameStatusEvent(getStatus(player2)));
+    synchronized protected void sendStatuses() {
+        playerMap.forEach((k, v) -> {
+            try {
+                v.getRight().triggerEvent(new GameStatusEvent(getStatus(v.getLeft())));
+            } catch (ScopaRuntimeException e) {
+                logger.error("caught unexpected exception", e);
+            }
+        });
     }
 
     public void waitForGameComplete() {
@@ -323,9 +312,17 @@ public class GameControl2 {
     private void dealHands() {
         // Each player gets 3 cards.
         for (int i = 0; i < 3; i++) {
-            this.gameplay.deal(player1);
-            this.gameplay.deal(player2);
+            this.gameplay.deal(this.playerOrder.get(0));
+            this.gameplay.deal(this.playerOrder.get(1));
         }
+    }
+
+    protected Player getPlayer1() {
+        return this.playerOrder.get(0);
+    }
+
+    protected Player getPlayer2() {
+        return this.playerOrder.get(1);
     }
 
 }

@@ -48,6 +48,10 @@ public class PlayerDetails {
         return playerId;
     }
 
+    public String toShortString() {
+        return String.format("Player id:%s name: %s", this.playerId, this.screenHandle);
+    }
+
     @Override
     public String toString() {
         return ToStringBuilder.reflectionToString(this);
