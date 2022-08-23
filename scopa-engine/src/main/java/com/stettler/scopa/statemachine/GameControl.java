@@ -184,10 +184,14 @@ public class GameControl extends EventSource {
 
             // Check for scopa
             if (this.gameplay.getTableCards().isEmpty()) {
-                logger.info("Player {} got a scopa", currentPlayer);
-
-                currentPlayerSource.triggerEvent(new ScopaEvent());
-                currentPlayer.setScore(currentPlayer.getScore()+1);
+                if (!this.gameplay.getDeck().hasNext() && this.player1.getHand().size() == 0 && this.player2.getHand().size() == 0) {
+                    logger.info("Scopa ended the game, so no point is awarded");
+                    currentPlayerSource.triggerEvent(new ScopaEvent(true));
+                } else {
+                    logger.info("Player {} got a scopa", currentPlayer);
+                    currentPlayerSource.triggerEvent(new ScopaEvent());
+                    currentPlayer.setScore(currentPlayer.getScore() + 1);
+                }
             }
         } else if (responseEvent.getMove().getType().equals(MoveType.DISCARD)){
             logger.info("Received discard play {}", move);

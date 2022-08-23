@@ -230,8 +230,66 @@ public class GameControlTest {
      * You can end the game on a scopa but the point does not count.
      */
     @Test
-    void testEndOfRoundScopaDoesNotCount() {
-        //assert (false);
+    void testEndOfRoundScopaDoesNotCountForPlayer2() throws Exception {
+        newGameAndRegistration();
+        //Setup game play for player2 to go last
+
+        control.changeState(State.WAIT_4_PLAYER2_MOVE);
+        control.turnCounter = 1;
+        for (int i = 0; i < 30; i++) {
+            this.control.gameplay.deck.draw();
+        }
+
+        control.gameplay.tableCards = new ArrayList<>(Arrays.asList(new Card(1, Suit.COINS), new Card(2, Suit.COINS),
+                new Card(3, Suit.COINS), new Card(4, Suit.COINS)));
+        control.player1.hand = new ArrayList<>();
+        control.player2.hand = new ArrayList<>(Arrays.asList(new Card(10, Suit.CUPS)));
+
+        triggerEvent(control, new PlayResponseEvent(player2Id, new Pickup(new Card(10, Suit.CUPS),
+                new ArrayList<>(Arrays.asList(new Card(1, Suit.COINS), new Card(2, Suit.COINS),
+                        new Card(3, Suit.COINS), new Card(4, Suit.COINS))))));
+
+        assertThat(player2.getEvents().get(0)).isInstanceOf(ScopaEvent.class);
+        assertThat(player2.getEvents().get(0).getEventType()).isEqualTo(EventType.SCOPA);
+        assertThat(((ScopaEvent) player2.getEvents().get(0)).isFinalTrick()).isTrue();
+        assertThat(control.gameplay.tableCards).hasSize(4);
+        assertThat(control.player1.getScore()).isEqualTo(0);
+        assertThat(control.player2.getScore()).isEqualTo(1);//ONE POINT ALREADY AWARDED FOR HIGHEST PRIME
+
+        assertThat(control.currentState).isEqualTo(State.WAIT_4_PLAYER2_MOVE);
+        assertThat(control.turnCounter).isEqualTo(1);
+        assertThat(control.roundCounter).isEqualTo(1);
+    }
+
+    void testEndOfRoundScopaDoesNotCountForPlayer1() throws Exception {
+        newGameAndRegistration();
+        //Setup game play for player1 to go last
+
+        control.changeState(State.WAIT_4_PLAYER1_MOVE);
+        control.turnCounter = 1;
+        for (int i = 0; i < 30; i++) {
+            this.control.gameplay.deck.draw();
+        }
+
+        control.gameplay.tableCards = new ArrayList<>(Arrays.asList(new Card(1, Suit.COINS), new Card(2, Suit.COINS),
+                new Card(3, Suit.COINS), new Card(4, Suit.COINS)));
+        control.player2.hand = new ArrayList<>();
+        control.player1.hand = new ArrayList<>(Arrays.asList(new Card(10, Suit.CUPS)));
+
+        triggerEvent(control, new PlayResponseEvent(player1Id, new Pickup(new Card(10, Suit.CUPS),
+                new ArrayList<>(Arrays.asList(new Card(1, Suit.COINS), new Card(2, Suit.COINS),
+                        new Card(3, Suit.COINS), new Card(4, Suit.COINS))))));
+
+        assertThat(player1.getEvents().get(0)).isInstanceOf(ScopaEvent.class);
+        assertThat(player1.getEvents().get(0).getEventType()).isEqualTo(EventType.SCOPA);
+        assertThat(((ScopaEvent) player1.getEvents().get(0)).isFinalTrick()).isTrue();
+        assertThat(control.gameplay.tableCards).hasSize(4);
+        assertThat(control.player2.getScore()).isEqualTo(0);
+        assertThat(control.player1.getScore()).isEqualTo(1);//ONE POINT ALREADY AWARDED FOR HIGHEST PRIME
+
+        assertThat(control.currentState).isEqualTo(State.WAIT_4_PLAYER1_MOVE);
+        assertThat(control.turnCounter).isEqualTo(1);
+        assertThat(control.roundCounter).isEqualTo(1);
     }
 
     @Test
@@ -544,6 +602,7 @@ public class GameControlTest {
                         new Card(3, Suit.COINS), new Card(4, Suit.COINS))))));
 
         assertThat(player1.getEvents().get(0).getEventType()).isEqualTo(EventType.SCOPA);
+        assertThat(((ScopaEvent) player1.getEvents().get(0)).isFinalTrick()).isFalse();
         assertThat(control.gameplay.tableCards).hasSize(0);
         assertThat(control.player1.getScore()).isEqualTo(1);
         assertThat(control.player2.getScore()).isEqualTo(0);
@@ -574,6 +633,7 @@ public class GameControlTest {
                         new Card(3, Suit.COINS), new Card(4, Suit.COINS))))));
 
         assertThat(player2.getEvents().get(0).getEventType()).isEqualTo(EventType.SCOPA);
+        assertThat(((ScopaEvent) player2.getEvents().get(0)).isFinalTrick()).isFalse();
         assertThat(control.gameplay.tableCards).hasSize(0);
         assertThat(control.player1.getScore()).isEqualTo(0);
         assertThat(control.player2.getScore()).isEqualTo(1);
