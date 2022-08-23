@@ -11,6 +11,10 @@ public class ScopaEvent extends GameEvent {
         this.finalTrick = finalTrick;
     }
 
+    public ScopaEvent(String playerId) {
+        super(playerId, EventType.SCOPA);
+    }
+
     public ScopaEvent() {
         super(EventType.SCOPA);
     }

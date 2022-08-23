@@ -6,6 +6,9 @@ public class GameStatusEvent extends GameEvent {
 
     private GameStatus status = new GameStatus();
 
+    public GameStatusEvent() {
+        super(EventType.STATUS);
+    }
     public GameStatusEvent(GameStatus status) {
         super(EventType.STATUS);
         this.status = status;
@@ -13,5 +16,9 @@ public class GameStatusEvent extends GameEvent {
 
     public GameStatus getStatus() {
         return status;
+    }
+
+    public void setStatus(GameStatus status) {
+        this.status = status;
     }
 }

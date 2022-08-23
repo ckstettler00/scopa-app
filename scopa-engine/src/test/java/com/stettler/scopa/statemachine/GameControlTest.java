@@ -456,6 +456,7 @@ public class GameControlTest {
 
         GameStatusEvent ps2 = (GameStatusEvent) player2.getEvents().get(0);
         assertThat(ps2.getPlayerId()).isEqualTo("all");
+
         assertThat(ps2.getStatus().getCurrentPlayerId()).isEqualTo(ps1.getStatus().getPlayer().getDetails().getPlayerId());
         assertThat(ps2.getStatus().getPlayer().getDetails().getScreenHandle()).isEqualTo("player2");
         assertThat(ps2.getStatus().getPlayer().getDetails().getEmailAddr()).isEqualTo("player2@gmail.com");

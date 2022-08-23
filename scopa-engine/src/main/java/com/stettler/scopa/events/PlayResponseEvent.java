@@ -1,15 +1,13 @@
 package com.stettler.scopa.events;
 
-import com.stettler.scopa.model.Discard;
 import com.stettler.scopa.model.Move;
-import com.stettler.scopa.model.MoveType;
 
 public class PlayResponseEvent extends GameEvent {
 
     private Move move;
 
     public PlayResponseEvent() {
-        super();
+        super(EventType.PLAY_RESP);
     }
 
     public PlayResponseEvent(String playerId, Move move) {
@@ -19,5 +17,9 @@ public class PlayResponseEvent extends GameEvent {
 
     public Move getMove() {
         return move;
+    }
+
+    public void setMove(Move move) {
+        this.move = move;
     }
 }
