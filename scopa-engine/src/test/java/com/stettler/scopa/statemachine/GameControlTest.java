@@ -53,9 +53,6 @@ public class GameControlTest {
         player1 = new TestSource();
         player2 = new TestSource();
 
-
-        control.registerPlayer1Source(player1);
-        control.registerPlayer2Source(player2);
         player1.start();
         player2.start();
         control.start();
@@ -68,13 +65,13 @@ public class GameControlTest {
         // Verify counters and score before sending first event
         assertThat(control.gameplay.deck.size()).isEqualTo(30);
         assertThat(control.roundCounter).isEqualTo(0);
-        assertThat(control.player1.getScore()).isEqualTo(0);
-        assertThat(control.player2.getScore()).isEqualTo(0);
+        assertThat(control.getPlayer1().getScore()).isEqualTo(0);
+        assertThat(control.getPlayer2().getScore()).isEqualTo(0);
 
         control.gameplay.tableCards = new ArrayList<>(Arrays.asList(new Card(1, Suit.COINS), new Card(2, Suit.COINS),
                 new Card(3, Suit.COINS), new Card(4, Suit.COINS)));
-        control.player1.hand = new ArrayList<>(Arrays.asList(new Card(1, Suit.CUPS)));
-        control.player2.hand = new ArrayList<>(Arrays.asList(new Card(2, Suit.SWORDS)));
+        control.getPlayer1().hand = new ArrayList<>(Arrays.asList(new Card(1, Suit.CUPS)));
+        control.getPlayer2().hand = new ArrayList<>(Arrays.asList(new Card(2, Suit.SWORDS)));
 
         // Player 1 uses last card.
         triggerEvent(control, new PlayResponseEvent(player1Id, new Pickup(new Card(1, Suit.CUPS),
@@ -83,8 +80,8 @@ public class GameControlTest {
         // Verify key counts and scores have not changed.
         assertThat(control.gameplay.deck.size()).isEqualTo(30);
         assertThat(control.roundCounter).isEqualTo(0);
-        assertThat(control.player1.getScore()).isEqualTo(0);
-        assertThat(control.player2.getScore()).isEqualTo(0);
+        assertThat(control.getPlayer1().getScore()).isEqualTo(0);
+        assertThat(control.getPlayer2().getScore()).isEqualTo(0);
 
         // Should be player 2s turn
         assertThat(control.currentState).isEqualTo(State.WAIT_4_PLAYER2_MOVE);
@@ -101,13 +98,13 @@ public class GameControlTest {
 
         // Scores should not be affected since the round did not increment and no scopa.
         assertThat(control.roundCounter).isEqualTo(0);
-        assertThat(control.player1.getScore()).isEqualTo(0);
-        assertThat(control.player2.getScore()).isEqualTo(0);
+        assertThat(control.getPlayer1().getScore()).isEqualTo(0);
+        assertThat(control.getPlayer2().getScore()).isEqualTo(0);
 
         assertThat(control.gameplay.tableCards).containsExactly(
                 new Card(3, Suit.COINS), new Card(4, Suit.COINS));
-        assertThat(control.player1.getHand()).hasSize(3);
-        assertThat(control.player2.getHand()).hasSize(3);
+        assertThat(control.getPlayer1().getHand()).hasSize(3);
+        assertThat(control.getPlayer2().getHand()).hasSize(3);
 
 
     }
@@ -117,9 +114,9 @@ public class GameControlTest {
         newGameAndRegistration();
         control.gameplay.tableCards = new ArrayList<>(Arrays.asList(new Card(9, Suit.COINS), new Card(2, Suit.COINS),
                 new Card(3, Suit.COINS), new Card(4, Suit.COINS)));
-        control.player1.hand = new ArrayList<>(Arrays.asList(new Card(1, Suit.CUPS), new Card(2, Suit.CUPS),
+        control.getPlayer1().hand = new ArrayList<>(Arrays.asList(new Card(1, Suit.CUPS), new Card(2, Suit.CUPS),
                 new Card(3, Suit.CUPS), new Card(9, Suit.CUPS)));
-        control.player2.hand = new ArrayList<>(Arrays.asList(new Card(1, Suit.SWORDS), new Card(2, Suit.SWORDS),
+        control.getPlayer2().hand = new ArrayList<>(Arrays.asList(new Card(1, Suit.SWORDS), new Card(2, Suit.SWORDS),
                 new Card(3, Suit.SWORDS), new Card(4, Suit.SWORDS)));
 
         // Playing a discard should not switch the lastTrick state.
@@ -151,8 +148,8 @@ public class GameControlTest {
         newGameAndRegistration();
         control.gameplay.tableCards = new ArrayList<>(Arrays.asList(new Card(1, Suit.COINS), new Card(2, Suit.COINS),
                 new Card(3, Suit.COINS), new Card(4, Suit.COINS)));
-        control.player1.hand = new ArrayList<>(Arrays.asList(new Card(1, Suit.CUPS), new Card(2, Suit.CUPS)));
-        control.player2.hand = new ArrayList<>(Arrays.asList(new Card(2, Suit.SWORDS), new Card(1, Suit.SWORDS)));
+        control.getPlayer1().hand = new ArrayList<>(Arrays.asList(new Card(1, Suit.CUPS), new Card(2, Suit.CUPS)));
+        control.getPlayer2().hand = new ArrayList<>(Arrays.asList(new Card(2, Suit.SWORDS), new Card(1, Suit.SWORDS)));
 
         // Should be player 1s turn
         assertThat(control.currentState).isEqualTo(State.WAIT_4_PLAYER1_MOVE);
@@ -196,8 +193,8 @@ public class GameControlTest {
         assertThat(control.currentState).isEqualTo(State.WAIT_4_PLAYER1_MOVE);
 
         assertThat(this.control.turnCounter).isEqualTo(2);
-        assertThat(this.control.player1.getHand()).hasSize(1);
-        assertThat(this.control.player2.getHand()).hasSize(1);
+        assertThat(this.control.getPlayer1().getHand()).hasSize(1);
+        assertThat(this.control.getPlayer2().getHand()).hasSize(1);
 
     }
 
@@ -221,8 +218,8 @@ public class GameControlTest {
 
         // Deck would have re-dealt
         assertThat(this.control.gameplay.deck.size()).isEqualTo(30);
-        assertThat(this.control.player1.getHand()).hasSize(3);
-        assertThat(this.control.player2.getHand()).hasSize(3);
+        assertThat(this.control.getPlayer1().getHand()).hasSize(3);
+        assertThat(this.control.getPlayer2().getHand()).hasSize(3);
 
     }
 
@@ -242,8 +239,8 @@ public class GameControlTest {
 
         control.gameplay.tableCards = new ArrayList<>(Arrays.asList(new Card(1, Suit.COINS), new Card(2, Suit.COINS),
                 new Card(3, Suit.COINS), new Card(4, Suit.COINS)));
-        control.player1.hand = new ArrayList<>();
-        control.player2.hand = new ArrayList<>(Arrays.asList(new Card(10, Suit.CUPS)));
+        control.getPlayer1().hand = new ArrayList<>();
+        control.getPlayer2().hand = new ArrayList<>(Arrays.asList(new Card(10, Suit.CUPS)));
 
         triggerEvent(control, new PlayResponseEvent(player2Id, new Pickup(new Card(10, Suit.CUPS),
                 new ArrayList<>(Arrays.asList(new Card(1, Suit.COINS), new Card(2, Suit.COINS),
@@ -253,8 +250,8 @@ public class GameControlTest {
         assertThat(player2.getEvents().get(0).getEventType()).isEqualTo(EventType.SCOPA);
         assertThat(((ScopaEvent) player2.getEvents().get(0)).isFinalTrick()).isTrue();
         assertThat(control.gameplay.tableCards).hasSize(4);
-        assertThat(control.player1.getScore()).isEqualTo(0);
-        assertThat(control.player2.getScore()).isEqualTo(1);//ONE POINT ALREADY AWARDED FOR HIGHEST PRIME
+        assertThat(control.getPlayer1().getScore()).isEqualTo(0);
+        assertThat(control.getPlayer2().getScore()).isEqualTo(1);//ONE POINT ALREADY AWARDED FOR HIGHEST PRIME
 
         assertThat(control.currentState).isEqualTo(State.WAIT_4_PLAYER2_MOVE);
         assertThat(control.turnCounter).isEqualTo(1);
@@ -273,8 +270,8 @@ public class GameControlTest {
 
         control.gameplay.tableCards = new ArrayList<>(Arrays.asList(new Card(1, Suit.COINS), new Card(2, Suit.COINS),
                 new Card(3, Suit.COINS), new Card(4, Suit.COINS)));
-        control.player2.hand = new ArrayList<>();
-        control.player1.hand = new ArrayList<>(Arrays.asList(new Card(10, Suit.CUPS)));
+        control.getPlayer2().hand = new ArrayList<>();
+        control.getPlayer1().hand = new ArrayList<>(Arrays.asList(new Card(10, Suit.CUPS)));
 
         triggerEvent(control, new PlayResponseEvent(player1Id, new Pickup(new Card(10, Suit.CUPS),
                 new ArrayList<>(Arrays.asList(new Card(1, Suit.COINS), new Card(2, Suit.COINS),
@@ -284,8 +281,8 @@ public class GameControlTest {
         assertThat(player1.getEvents().get(0).getEventType()).isEqualTo(EventType.SCOPA);
         assertThat(((ScopaEvent) player1.getEvents().get(0)).isFinalTrick()).isTrue();
         assertThat(control.gameplay.tableCards).hasSize(4);
-        assertThat(control.player2.getScore()).isEqualTo(0);
-        assertThat(control.player1.getScore()).isEqualTo(1);//ONE POINT ALREADY AWARDED FOR HIGHEST PRIME
+        assertThat(control.getPlayer2().getScore()).isEqualTo(0);
+        assertThat(control.getPlayer1().getScore()).isEqualTo(1);//ONE POINT ALREADY AWARDED FOR HIGHEST PRIME
 
         assertThat(control.currentState).isEqualTo(State.WAIT_4_PLAYER1_MOVE);
         assertThat(control.turnCounter).isEqualTo(1);
@@ -305,17 +302,17 @@ public class GameControlTest {
         this.control.gameplay.tableCards = new ArrayList<>(Arrays.asList(new Card(1, Suit.COINS),
                 new Card(2, Suit.COINS), new Card(7, Suit.COINS), new Card(1, Suit.SWORDS)));
 
-        Player player2Spy = Mockito.spy(this.control.player2);
-        this.control.player2 = player2Spy;
+        Player player2Spy = Mockito.spy(this.control.getPlayer2());
+        this.control.setPlayer2(player2Spy);
 
         // Setup to look like player 2 move.
         this.control.changeState(State.WAIT_4_PLAYER2_MOVE);
-        assertThat(this.control.player2.getCoins()).isEqualTo(0);
-        assertThat(this.control.player2.isSevenCoins()).isFalse();
+        assertThat(this.control.getPlayer2().getCoins()).isEqualTo(0);
+        assertThat(this.control.getPlayer2().isSevenCoins()).isFalse();
 
         // Put one card in player2 hand and zero in player 1 to simulate last card of the round.
-        this.control.player2.hand = new ArrayList<>(Arrays.asList(new Card(1, Suit.CUPS)));
-        this.control.player1.hand = new ArrayList<>();
+        this.control.getPlayer2().hand = new ArrayList<>(Arrays.asList(new Card(1, Suit.CUPS)));
+        this.control.getPlayer1().hand = new ArrayList<>();
 
         // Play the card.
         this.control.handlePlayResponse(new PlayResponseEvent(player2Id, new Pickup(new Card(1, Suit.CUPS),
@@ -349,17 +346,17 @@ public class GameControlTest {
         this.control.gameplay.tableCards = new ArrayList<>(Arrays.asList(new Card(1, Suit.COINS),
                 new Card(2, Suit.COINS), new Card(7, Suit.COINS), new Card(1, Suit.SWORDS)));
 
-        Player player1Spy = Mockito.spy(this.control.player1);
-        this.control.player1 = player1Spy;
+        Player player1Spy = Mockito.spy(this.control.getPlayer1());
+        this.control.setPlayer1(player1Spy);
 
         // Setup to look like player 1 move.
         this.control.changeState(State.WAIT_4_PLAYER1_MOVE);
-        assertThat(this.control.player2.getCoins()).isEqualTo(0);
-        assertThat(this.control.player2.isSevenCoins()).isFalse();
+        assertThat(this.control.getPlayer2().getCoins()).isEqualTo(0);
+        assertThat(this.control.getPlayer2().isSevenCoins()).isFalse();
 
         // Put one card in player2 hand and zero in player 1 to simulate last card of the round.
-        this.control.player1.hand = new ArrayList<>(Arrays.asList(new Card(1, Suit.CUPS)));
-        this.control.player2.hand = new ArrayList<>();
+        this.control.getPlayer1().hand = new ArrayList<>(Arrays.asList(new Card(1, Suit.CUPS)));
+        this.control.getPlayer2().hand = new ArrayList<>();
 
         // Play the card.
         this.control.handlePlayResponse(new PlayResponseEvent(player1Id, new Pickup(new Card(1, Suit.CUPS),
@@ -380,13 +377,13 @@ public class GameControlTest {
     @Test
     void testEndOfGamePlayer2Wins() throws Exception {
         newGameAndRegistration();
-        this.verifySpecifiedPlayerWins(this.control.player2, this.control.player1);
+        this.verifySpecifiedPlayerWins(this.control.getPlayer2(), this.control.getPlayer1());
     }
 
     @Test
     void testEndOfGamePlayer1Wins() throws Exception {
         newGameAndRegistration();
-        this.verifySpecifiedPlayerWins(this.control.player1, this.control.player2);
+        this.verifySpecifiedPlayerWins(this.control.getPlayer1(), this.control.getPlayer2());
     }
 
     @Test
@@ -394,13 +391,13 @@ public class GameControlTest {
         newGameAndRegistration();
 
         // This will generate for 21 - 21 tie
-        this.control.player2.setScore(10);
-        this.control.player1.setScore(10);
+        this.control.getPlayer2().setScore(10);
+        this.control.getPlayer1().setScore(10);
         this.playAndVerifyOneRound();
 
         // Confirm the tie.
-        assertThat(this.control.player2.getScore()).isEqualTo(11);
-        assertThat(this.control.player1.getScore()).isEqualTo(11);
+        assertThat(this.control.getPlayer2().getScore()).isEqualTo(11);
+        assertThat(this.control.getPlayer1().getScore()).isEqualTo(11);
 
         // First player switches at the end of a round so player2 is up again.
         assertThat(this.control.currentState).isEqualTo(State.WAIT_4_PLAYER2_MOVE);
@@ -414,67 +411,6 @@ public class GameControlTest {
         control.triggerEvent(new NewGameEvent());
         Thread.sleep(1000L);
         assertThat(control.currentState).isEqualTo(State.WAIT_FOR_PLAYER1);
-
-    }
-
-    @Test
-    void testRegistration() throws Exception {
-        assertThat(control.currentState).isEqualTo(State.INIT);
-        control.triggerEvent(new NewGameEvent());
-        Thread.sleep(500);
-
-        assertThat(control.currentState).isEqualTo(State.WAIT_FOR_PLAYER1);
-
-        PlayerDetails p1 = createPlayer1Details();
-        control.triggerEvent(new RegisterEvent(p1));
-        Thread.sleep(500);
-
-        assertThat(control.currentState).isEqualTo(State.WAIT_FOR_PLAYER2);
-
-        PlayerDetails p2 = createPlayer2Details();
-        control.triggerEvent(new RegisterEvent(p2));
-
-        Thread.sleep(500L);
-        assertThat(control.currentState).isEqualTo(State.WAIT_4_PLAYER1_MOVE);
-        assertThat(control.turnCounter).isEqualTo(0);
-
-        assertThat(player1.getEvents()).hasSize(2);
-        assertThat(player1.getEvents().get(0)).isInstanceOf(GameStatusEvent.class);
-        assertThat(player1.getEvents().get(1)).isInstanceOf(PlayRequestEvent.class);
-
-        assertThat(player2.getEvents()).hasSize(1);
-        assertThat(player2.getEvents().get(0)).isInstanceOf(GameStatusEvent.class);
-
-        GameStatusEvent ps1 = (GameStatusEvent) player1.getEvents().get(0);
-        assertThat(ps1.getPlayerId()).isEqualTo("all");
-        assertThat(ps1.getStatus().getCurrentPlayerId()).isEqualTo(ps1.getStatus().getPlayer().getDetails().getPlayerId());
-
-        assertThat(ps1.getStatus().getPlayer().getDetails().getScreenHandle()).isEqualTo("player1");
-        assertThat(ps1.getStatus().getPlayer().getDetails().getEmailAddr()).isEqualTo("player1@gmail.com");
-        assertThat(ps1.getStatus().getPlayer().getDetails().getPlayerSecret()).isEqualTo("player1secret");
-        assertThat(ps1.getStatus().getPlayer().getDetails().getPlayerToken()).isEqualTo("player1token");
-
-        GameStatusEvent ps2 = (GameStatusEvent) player2.getEvents().get(0);
-        assertThat(ps2.getPlayerId()).isEqualTo("all");
-
-        assertThat(ps2.getStatus().getCurrentPlayerId()).isEqualTo(ps1.getStatus().getPlayer().getDetails().getPlayerId());
-        assertThat(ps2.getStatus().getPlayer().getDetails().getScreenHandle()).isEqualTo("player2");
-        assertThat(ps2.getStatus().getPlayer().getDetails().getEmailAddr()).isEqualTo("player2@gmail.com");
-        assertThat(ps2.getStatus().getPlayer().getDetails().getPlayerSecret()).isEqualTo("player2secret");
-        assertThat(ps2.getStatus().getPlayer().getDetails().getPlayerToken()).isEqualTo("player2token");
-
-
-        assertThat(ps1.getStatus().getGameId()).isEqualTo(ps2.getStatus().getGameId());
-        assertThat(ps1.getStatus().getGameId()).isNotEmpty();
-        assertThat(ps1.getStatus().getDeck()).isEqualTo(ps2.getStatus().getDeck());
-        assertThat(ps1.getStatus().getDeck().size()).isEqualTo(30);
-
-        assertThat(ps1.getStatus().getTable()).isEqualTo(ps2.getStatus().getTable());
-        assertThat(ps1.getStatus().getTable().size()).isEqualTo(4);
-
-        assertThat(ps1.getStatus().getPlayer().getHand()).isNotEqualTo(ps2.getStatus().getPlayer().getHand());
-        assertThat(ps1.getStatus().getPlayer().getHand().size()).isEqualTo(3);
-        assertThat(ps2.getStatus().getPlayer().getHand().size()).isEqualTo(3);
 
     }
 
@@ -493,9 +429,9 @@ public class GameControlTest {
         newGameAndRegistration();
         control.gameplay.tableCards = new ArrayList<>(Arrays.asList(new Card(1, Suit.COINS), new Card(2, Suit.COINS),
                 new Card(6, Suit.COINS), new Card(4, Suit.COINS)));
-        control.player1.hand = new ArrayList<>(Arrays.asList(new Card(1, Suit.CUPS), new Card(2, Suit.CUPS),
+        control.getPlayer1().hand = new ArrayList<>(Arrays.asList(new Card(1, Suit.CUPS), new Card(2, Suit.CUPS),
                 new Card(3, Suit.CUPS), new Card(4, Suit.CUPS)));
-        control.player2.hand = new ArrayList<>(Arrays.asList(new Card(1, Suit.SWORDS), new Card(2, Suit.SWORDS),
+        control.getPlayer2().hand = new ArrayList<>(Arrays.asList(new Card(1, Suit.SWORDS), new Card(2, Suit.SWORDS),
                 new Card(3, Suit.SWORDS), new Card(4, Suit.SWORDS)));
 
         player1.getEvents().clear();
@@ -524,9 +460,9 @@ public class GameControlTest {
         newGameAndRegistration();
         control.gameplay.tableCards = new ArrayList<>(Arrays.asList(new Card(9, Suit.COINS), new Card(2, Suit.COINS),
                 new Card(3, Suit.COINS), new Card(4, Suit.COINS)));
-        control.player1.hand = new ArrayList<>(Arrays.asList(new Card(2, Suit.SCEPTERS), new Card(2, Suit.CUPS),
+        control.getPlayer1().hand = new ArrayList<>(Arrays.asList(new Card(2, Suit.SCEPTERS), new Card(2, Suit.CUPS),
                 new Card(3, Suit.CUPS), new Card(9, Suit.CUPS)));
-        control.player2.hand = new ArrayList<>(Arrays.asList(new Card(1, Suit.SWORDS), new Card(2, Suit.SWORDS),
+        control.getPlayer2().hand = new ArrayList<>(Arrays.asList(new Card(1, Suit.SWORDS), new Card(2, Suit.SWORDS),
                 new Card(3, Suit.SWORDS), new Card(4, Suit.SWORDS)));
 
         triggerEvent(control, new PlayResponseEvent(player1Id, new Discard(new
@@ -552,9 +488,9 @@ public class GameControlTest {
         newGameAndRegistration();
         control.gameplay.tableCards = new ArrayList<>(Arrays.asList(new Card(1, Suit.COINS), new Card(2, Suit.COINS),
                 new Card(6, Suit.COINS), new Card(4, Suit.COINS)));
-        control.player1.hand = new ArrayList<>(Arrays.asList(new Card(1, Suit.CUPS), new Card(2, Suit.CUPS),
+        control.getPlayer1().hand = new ArrayList<>(Arrays.asList(new Card(1, Suit.CUPS), new Card(2, Suit.CUPS),
                 new Card(3, Suit.CUPS), new Card(4, Suit.CUPS)));
-        control.player2.hand = new ArrayList<>(Arrays.asList(new Card(1, Suit.SWORDS), new Card(2, Suit.SWORDS),
+        control.getPlayer2().hand = new ArrayList<>(Arrays.asList(new Card(1, Suit.SWORDS), new Card(2, Suit.SWORDS),
                 new Card(3, Suit.SWORDS), new Card(4, Suit.SWORDS)));
 
         triggerEvent(control, new PlayResponseEvent(player1Id, new Pickup(new Card(4, Suit.CUPS),
@@ -565,7 +501,7 @@ public class GameControlTest {
         assertThat(tmpe.getStatus().getTable()).containsExactly(new Card(1, Suit.COINS), new Card(2, Suit.COINS),
                 new Card(6, Suit.COINS)).isEqualTo(this.control.gameplay.tableCards);
         assertThat(tmpe.getStatus().getPlayer().getHand()).containsExactly(new Card(1, Suit.CUPS), new Card(2, Suit.CUPS),
-                new Card(3, Suit.CUPS)).isEqualTo(this.control.player1.getHand());
+                new Card(3, Suit.CUPS)).isEqualTo(this.control.getPlayer1().getHand());
 
         assertThat(control.currentState).isEqualTo(State.WAIT_4_PLAYER2_MOVE);
         assertThat(player2.getEvents().get(1)).isInstanceOf(PlayRequestEvent.class);
@@ -579,7 +515,7 @@ public class GameControlTest {
         tmpe = (GameStatusEvent) player2.getEvents().get(0);
         assertThat(tmpe.getStatus().getTable()).containsExactly(new Card(6, Suit.COINS));
         assertThat(tmpe.getStatus().getPlayer().getHand()).containsExactly(new Card(1, Suit.SWORDS), new Card(2, Suit.SWORDS), new Card(4, Suit.SWORDS))
-                .isEqualTo(this.control.player2.getHand());
+                .isEqualTo(this.control.getPlayer2().getHand());
 
         assertThat(control.currentState).isEqualTo(State.WAIT_4_PLAYER1_MOVE);
         assertThat(player1.getEvents().get(1)).isInstanceOf(PlayRequestEvent.class);
@@ -593,9 +529,9 @@ public class GameControlTest {
         newGameAndRegistration();
         control.gameplay.tableCards = new ArrayList<>(Arrays.asList(new Card(1, Suit.COINS), new Card(2, Suit.COINS),
                 new Card(3, Suit.COINS), new Card(4, Suit.COINS)));
-        control.player1.hand = new ArrayList<>(Arrays.asList(new Card(1, Suit.CUPS), new Card(2, Suit.CUPS),
+        control.getPlayer1().hand = new ArrayList<>(Arrays.asList(new Card(1, Suit.CUPS), new Card(2, Suit.CUPS),
                 new Card(3, Suit.CUPS), new Card(10, Suit.CUPS)));
-        control.player2.hand = new ArrayList<>(Arrays.asList(new Card(1, Suit.SWORDS), new Card(2, Suit.SWORDS),
+        control.getPlayer2().hand = new ArrayList<>(Arrays.asList(new Card(1, Suit.SWORDS), new Card(2, Suit.SWORDS),
                 new Card(3, Suit.SWORDS), new Card(4, Suit.SWORDS)));
 
         triggerEvent(control, new PlayResponseEvent(player1Id, new Pickup(new Card(10, Suit.CUPS),
@@ -605,8 +541,8 @@ public class GameControlTest {
         assertThat(player1.getEvents().get(0).getEventType()).isEqualTo(EventType.SCOPA);
         assertThat(((ScopaEvent) player1.getEvents().get(0)).isFinalTrick()).isFalse();
         assertThat(control.gameplay.tableCards).hasSize(0);
-        assertThat(control.player1.getScore()).isEqualTo(1);
-        assertThat(control.player2.getScore()).isEqualTo(0);
+        assertThat(control.getPlayer1().getScore()).isEqualTo(1);
+        assertThat(control.getPlayer2().getScore()).isEqualTo(0);
 
         assertThat(control.currentState).isEqualTo(State.WAIT_4_PLAYER2_MOVE);
         assertThat(player2.getEvents().get(1)).isInstanceOf(PlayRequestEvent.class);
@@ -619,9 +555,9 @@ public class GameControlTest {
         newGameAndRegistration();
         control.gameplay.tableCards = new ArrayList<>(Arrays.asList(new Card(1, Suit.COINS), new Card(2, Suit.COINS),
                 new Card(3, Suit.COINS), new Card(4, Suit.COINS)));
-        control.player1.hand = new ArrayList<>(Arrays.asList(new Card(1, Suit.CUPS), new Card(2, Suit.CUPS),
+        control.getPlayer1().hand = new ArrayList<>(Arrays.asList(new Card(1, Suit.CUPS), new Card(2, Suit.CUPS),
                 new Card(3, Suit.CUPS), new Card(10, Suit.CUPS)));
-        control.player2.hand = new ArrayList<>(Arrays.asList(new Card(1, Suit.SWORDS), new Card(2, Suit.SWORDS),
+        control.getPlayer2().hand = new ArrayList<>(Arrays.asList(new Card(1, Suit.SWORDS), new Card(2, Suit.SWORDS),
                 new Card(3, Suit.SWORDS), new Card(4, Suit.SWORDS)));
 
         triggerEvent(control, new PlayResponseEvent(player1Id, new Pickup(new Card(1, Suit.CUPS),
@@ -636,8 +572,8 @@ public class GameControlTest {
         assertThat(player2.getEvents().get(0).getEventType()).isEqualTo(EventType.SCOPA);
         assertThat(((ScopaEvent) player2.getEvents().get(0)).isFinalTrick()).isFalse();
         assertThat(control.gameplay.tableCards).hasSize(0);
-        assertThat(control.player1.getScore()).isEqualTo(0);
-        assertThat(control.player2.getScore()).isEqualTo(1);
+        assertThat(control.getPlayer1().getScore()).isEqualTo(0);
+        assertThat(control.getPlayer2().getScore()).isEqualTo(1);
 
         assertThat(control.currentState).isEqualTo(State.WAIT_4_PLAYER1_MOVE);
     }
@@ -658,8 +594,8 @@ public class GameControlTest {
                 new Card(6, Suit.COINS), new Card(7, Suit.COINS)));
 
         // Setup player cards so they each player has one card left.
-        control.player1.hand = new ArrayList<>(Arrays.asList(new Card(7, Suit.CUPS)));
-        control.player2.hand = new ArrayList<>(Arrays.asList(new Card(5, Suit.SWORDS)));
+        control.getPlayer1().hand = new ArrayList<>(Arrays.asList(new Card(7, Suit.CUPS)));
+        control.getPlayer2().hand = new ArrayList<>(Arrays.asList(new Card(5, Suit.SWORDS)));
 
         // Play1 plays a pickup
         triggerEvent(control, new PlayResponseEvent(player1Id, new Pickup(new Card(7, Suit.CUPS),
@@ -675,15 +611,15 @@ public class GameControlTest {
 
         // The last 6 cards should  have been dealt.
         assertThat(this.control.gameplay.deck.size()).isEqualTo(0);
-        assertThat(this.control.player1.getHand()).hasSize(3);
-        assertThat(this.control.player2.getHand()).hasSize(3);
+        assertThat(this.control.getPlayer1().getHand()).hasSize(3);
+        assertThat(this.control.getPlayer2().getHand()).hasSize(3);
 
         // Change the cards to known values to make testing easier.
-        control.player1.hand = new ArrayList<>();
-        control.player2.hand = new ArrayList<>();
+        control.getPlayer1().hand = new ArrayList<>();
+        control.getPlayer2().hand = new ArrayList<>();
         for (int i = 8; i < 11; i++) {
-            control.player1.hand.add(new Card(i, Suit.CUPS));
-            control.player2.hand.add(new Card(i, Suit.SWORDS));
+            control.getPlayer1().hand.add(new Card(i, Suit.CUPS));
+            control.getPlayer2().hand.add(new Card(i, Suit.SWORDS));
         }
 
         // this should be a safe discard for player1
@@ -735,8 +671,8 @@ public class GameControlTest {
                 new Card(6, Suit.COINS), new Card(7, Suit.COINS)));
 
         // Setup player cards so they each player has one card left.
-        control.player1.hand = new ArrayList<>(Arrays.asList(new Card(7, Suit.CUPS)));
-        control.player2.hand = new ArrayList<>(Arrays.asList(new Card(5, Suit.SWORDS)));
+        control.getPlayer1().hand = new ArrayList<>(Arrays.asList(new Card(7, Suit.CUPS)));
+        control.getPlayer2().hand = new ArrayList<>(Arrays.asList(new Card(5, Suit.SWORDS)));
 
         // Play1 plays a pickup
         triggerEvent(control, new PlayResponseEvent(player1Id, new Pickup(new Card(7, Suit.CUPS),
@@ -752,15 +688,15 @@ public class GameControlTest {
 
         // The last 6 cards should  have been dealt.
         assertThat(this.control.gameplay.deck.size()).isEqualTo(0);
-        assertThat(this.control.player1.getHand()).hasSize(3);
-        assertThat(this.control.player2.getHand()).hasSize(3);
+        assertThat(this.control.getPlayer1().getHand()).hasSize(3);
+        assertThat(this.control.getPlayer2().getHand()).hasSize(3);
 
         // Change the cards to known values to make testing easier.
-        control.player1.hand = new ArrayList<>();
-        control.player2.hand = new ArrayList<>();
+        control.getPlayer1().hand = new ArrayList<>();
+        control.getPlayer2().hand = new ArrayList<>();
         for (int i = 8; i < 11; i++) {
-            control.player1.hand.add(new Card(i, Suit.CUPS));
-            control.player2.hand.add(new Card(i, Suit.SWORDS));
+            control.getPlayer1().hand.add(new Card(i, Suit.CUPS));
+            control.getPlayer2().hand.add(new Card(i, Suit.SWORDS));
         }
 
         // Setup the score so that this is the end of the round.
@@ -840,15 +776,22 @@ public class GameControlTest {
 
     private void newGameAndRegistration() throws Exception {
         triggerEvent(control, new NewGameEvent());
-        triggerEvent(control,new RegisterEvent(createPlayer1Details()));
-        triggerEvent(control,new RegisterEvent(createPlayer2Details()));
 
-        Thread.sleep(500);
+        PlayerDetails d1 = createPlayer1Details();
+        PlayerDetails d2 = createPlayer2Details();
+        control.registerPlayer(d1, player1);
+        control.registerPlayer(d2, player2);
+        Thread.sleep(250);
+
+        assertThat(control.currentState).isEqualTo(State.WAIT_4_PLAYER1_MOVE);
+
         GameStatusEvent ps1 = (GameStatusEvent) player1.getEvents().get(0);
         this.player1Id = ps1.getStatus().getPlayer().getDetails().getPlayerId();
+        assertThat(d1.getPlayerId()).isEqualTo(this.player1Id);
 
         GameStatusEvent ps2 = (GameStatusEvent) player2.getEvents().get(0);
         this.player2Id = ps2.getStatus().getPlayer().getDetails().getPlayerId();
+        assertThat(d2.getPlayerId()).isEqualTo(this.player2Id);
     }
 
     private void triggerEvent(EventSource playerSource, GameEvent event) throws Exception{
