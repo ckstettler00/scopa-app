@@ -1,4 +1,4 @@
-package com.stettler.scopa.scopaserver.config;
+package com.stettler.scopa.scopaserver.utils;
 
 import com.stettler.scopa.exceptions.ScopaRuntimeException;
 import com.stettler.scopa.model.PlayerDetails;
@@ -8,6 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -27,6 +29,13 @@ public class GameRegistry {
         return game;
     }
 
+    public List<String>  getGameIds(){
+
+        ArrayList<String> temp = new ArrayList<>();
+        temp.addAll(gameMap.keySet());
+
+        return temp;
+    }
     public GameControl findGame(String gameId) {
         return gameMap.get(gameId);
     }

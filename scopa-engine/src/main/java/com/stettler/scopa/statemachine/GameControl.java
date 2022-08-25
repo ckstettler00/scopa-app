@@ -38,7 +38,6 @@ public class GameControl extends EventSource {
         status.setGameId(gameId);
         status.setPlayer(player);
         status.setTable(this.gameplay.getTableCards());
-        status.setDeck(this.gameplay.getDeck());
 
         if (this.currentPlayer != null) {
             status.setCurrentPlayerId(currentPlayer.getDetails().getPlayerId());
@@ -47,6 +46,9 @@ public class GameControl extends EventSource {
     }
 
     public Player getPlayer1() {
+        if(playerOrder.size() == 0) {
+            return null;
+        }
         return this.playerOrder.get(0);
     }
 
@@ -55,6 +57,9 @@ public class GameControl extends EventSource {
     }
 
     public Player getPlayer2() {
+        if(playerOrder.size() == 1) {
+            return null;
+        }
         return this.playerOrder.get(1);
     }
 

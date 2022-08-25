@@ -29,6 +29,7 @@ public class ModelTest {
         p.setScreenHandle("natename");
         RegisterEvent r = new RegisterEvent(p);
         m.setMessageType(EventType.REGISTER.name());
+        r.setGameId("62357ba0-00be-4fb3-bcd9-0fa7c1cec274");
         m.setPayload(mapper.writeValueAsString(r));
         System.out.println(mapper.writeValueAsString(m));
     }

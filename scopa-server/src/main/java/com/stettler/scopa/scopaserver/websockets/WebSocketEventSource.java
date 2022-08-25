@@ -2,7 +2,7 @@ package com.stettler.scopa.scopaserver.websockets;
 
 import com.stettler.scopa.events.*;
 import com.stettler.scopa.exceptions.ScopaRuntimeException;
-import com.stettler.scopa.scopaserver.config.GameRegistry;
+import com.stettler.scopa.scopaserver.utils.GameRegistry;
 import com.stettler.scopa.statemachine.EventSource;
 import com.stettler.scopa.statemachine.GameControl;
 import com.stettler.scopa.statemachine.Player;
@@ -84,7 +84,9 @@ public class WebSocketEventSource extends EventSource {
     protected void sendToClient(GameEvent event) {
         String msg = converter.convert(event, String.class);
         try {
-            this.session.sendMessage(new TextMessage(msg));
+            synchronized(this.session) {
+                this.session.sendMessage(new TextMessage(msg));
+            }
         } catch (IOException e) {
             logger.error("Failed to write message to the client: {}", msg);
             throw new ScopaRuntimeException("Failed to write event to client");
