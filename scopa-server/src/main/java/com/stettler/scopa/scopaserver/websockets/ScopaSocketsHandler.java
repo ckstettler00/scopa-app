@@ -1,11 +1,10 @@
 package com.stettler.scopa.scopaserver.websockets;
 
-import com.stettler.scopa.events.*;
-import com.stettler.scopa.scopaserver.model.ScopaMessage;
+import com.stettler.scopa.events.GameEvent;
 import com.stettler.scopa.statemachine.EventSource;
-import com.stettler.scopa.statemachine.Player;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.web.socket.CloseStatus;
@@ -14,7 +13,6 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
-import javax.annotation.PostConstruct;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -24,7 +22,8 @@ public class ScopaSocketsHandler extends TextWebSocketHandler {
     @Autowired
     ConversionService converter;
 
-
+    @Autowired
+    BeanFactory factory;
 
     Map<String, WebSocketEventSource> clientToEventSource = new ConcurrentHashMap<>();
 
@@ -33,11 +32,11 @@ public class ScopaSocketsHandler extends TextWebSocketHandler {
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         super.afterConnectionEstablished(session);
 
-
-        WebSocketEventSource client = new WebSocketEventSource(session);
+        logger.info("New session was created id:{}", session.getId());
+        WebSocketEventSource client = this.factory.getBean(WebSocketEventSource.class, session);
         client.start();
 
-        logger.info("Registering client {}",session);
+        logger.info("Registering client {}", session);
         clientToEventSource.put(session.getId(), client);
     }
 

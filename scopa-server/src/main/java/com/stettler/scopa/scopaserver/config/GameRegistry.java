@@ -31,15 +31,4 @@ public class GameRegistry {
         return gameMap.get(gameId);
     }
 
-    public void registerPlayer(String gameId, PlayerDetails details, EventSource source) {
-        GameControl game = gameMap.get(gameId);
-        if (game == null) {
-            logger.error("Invalid game id: " + gameId);
-            throw new ScopaRuntimeException(String.format("Invalid game id: %s", gameId));
-        }
-
-        game.registerPlayer(details, source);
-
-    }
-
 }
