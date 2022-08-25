@@ -5,7 +5,7 @@
     <artifactId>scopa-engine</artifactId>
     <packaging>jar</packaging>
     <version>1.0-SNAPSHOT</version>
-    <name>scopa-cli</name>
+    <name>scopa-engine</name>
     <url>http://maven.apache.org</url>
     <parent>
         <artifactId>scopa-parent</artifactId>

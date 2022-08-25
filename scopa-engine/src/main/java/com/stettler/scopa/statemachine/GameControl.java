@@ -19,8 +19,6 @@ public class GameControl extends EventSource {
 
     State currentState;
 
-    Map<EventType, Consumer<GameEvent>> handlers = new ConcurrentHashMap<>();
-
     Map<String, EventSource> playerMap = new ConcurrentHashMap<>();
     List<Player> playerOrder = new ArrayList<>();
 
@@ -361,6 +359,7 @@ public class GameControl extends EventSource {
         logger.debug("handleNewGame: {}", event);
         this.gameplay = new Gameplay();
         changeState(State.WAIT_FOR_PLAYER1);
+        sendStatuses();
         return;
     }
 
