@@ -108,6 +108,7 @@ public class GameControl extends EventSource {
     }
 
     public String getGameId() {
+        logger.info("I hope I see this");
         return gameId;
     }
 

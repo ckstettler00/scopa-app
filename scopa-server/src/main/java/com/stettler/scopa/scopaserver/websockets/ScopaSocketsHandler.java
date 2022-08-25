@@ -24,13 +24,18 @@ public class ScopaSocketsHandler extends TextWebSocketHandler {
     @Autowired
     ConversionService converter;
 
+
+
     Map<String, WebSocketEventSource> clientToEventSource = new ConcurrentHashMap<>();
 
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         super.afterConnectionEstablished(session);
+
+
         WebSocketEventSource client = new WebSocketEventSource(session);
+        client.start();
 
         logger.info("Registering client {}",session);
         clientToEventSource.put(session.getId(), client);
@@ -41,12 +46,16 @@ public class ScopaSocketsHandler extends TextWebSocketHandler {
         super.handleTextMessage(session, message);
 
         logger.debug("Received message: {}", message.getPayload());
-        ScopaMessage msg = converter.convert(message.getPayload(), ScopaMessage.class);
 
         GameEvent event = converter.convert(message.getPayload(), GameEvent.class);
 
         logger.debug("Lookup event source for websocket session {}", session.getId());
         EventSource source = clientToEventSource.get(session.getId());
+        if (source == null) {
+            logger.error("Invalid session id {}", session.getId());
+            session.sendMessage(new TextMessage("Bad session ID"));
+            return;
+        }
 
         logger.debug("Sending event:{} to session's event source:{}", event, source);
         source.triggerEvent(event);

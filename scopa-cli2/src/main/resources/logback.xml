@@ -17,7 +17,7 @@
         <appender-ref ref="FILE" />
     </logger>
 
-    <root level="error" additivity="false">
+    <root level="info" additivity="false">
         <appender-ref ref="FILE" />
     </root>
 </configuration>

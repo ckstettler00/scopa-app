@@ -59,7 +59,7 @@ public abstract class EventSource {
                 logger.error("Caught scopa exception", ex);
             }
         }
-        logger.debug("exited the run looop");
+        logger.debug("exited the run loop");
     }
 
     /**

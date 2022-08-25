@@ -1,11 +1,9 @@
 package com.stettler.scopa.scopaserver.config;
 
-import com.stettler.scopa.events.NewGameEvent;
 import com.stettler.scopa.exceptions.ScopaRuntimeException;
 import com.stettler.scopa.model.PlayerDetails;
 import com.stettler.scopa.statemachine.EventSource;
 import com.stettler.scopa.statemachine.GameControl;
-import jdk.internal.event.Event;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -20,8 +18,12 @@ public class GameRegistry {
     private Map<String, GameControl> gameMap = new ConcurrentHashMap<>();
 
     public GameControl newGame() {
+        logger.info("Create a new game");
         GameControl game = new GameControl();
         game.start();
+        logger.info("Game ID: {}", game.getGameId());
+        this.gameMap.put(game.getGameId(), game);
+
         return game;
     }
 
@@ -30,13 +32,13 @@ public class GameRegistry {
     }
 
     public void registerPlayer(String gameId, PlayerDetails details, EventSource source) {
-        GameControl control = gameMap.get(gameId);
-        if (control == null) {
+        GameControl game = gameMap.get(gameId);
+        if (game == null) {
             logger.error("Invalid game id: " + gameId);
             throw new ScopaRuntimeException(String.format("Invalid game id: %s", gameId));
         }
 
-        control.registerPlayer(details, source);
+        game.registerPlayer(details, source);
 
     }
 

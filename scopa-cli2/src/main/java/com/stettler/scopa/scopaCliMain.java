@@ -19,16 +19,18 @@ public class scopaCliMain {
         control.start();
         player1Source.start();
         player2Source.start();
-        control.triggerEvent(new NewGameEvent());
-        control.registerPlayer1Source(player1Source);
-        control.registerPlayer2Source(player2Source);
 
         // Register with the controller.
         player1Source.instructions();
         PlayerDetails p1d = player1Source.promptForPlayerDetails();
-        control.triggerEvent(new RegisterEvent(p1d));
-
         PlayerDetails p2d = player2Source.promptForPlayerDetails();
+
+        control.registerPlayer(p1d, player1Source);
+        control.registerPlayer(p2d, player2Source);
+
+        control.triggerEvent(new NewGameEvent());
+
+        control.triggerEvent(new RegisterEvent(p1d));
         control.triggerEvent(new RegisterEvent(p2d));
 
         control.waitForGameComplete();
