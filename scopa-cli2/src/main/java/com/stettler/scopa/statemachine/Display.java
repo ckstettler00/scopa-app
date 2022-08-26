@@ -181,7 +181,7 @@ public class Display {
                GameStatus tmpStatus = this.gameStatus.get(tmpIds.get(idx));
                makeHand(idx, tmpStatus.getPlayer().getHand());
                makeTable(tmpStatus.getTable());
-               remainingDeck("" + tmpStatus.getDeck().size());
+               remainingDeck("" + tmpStatus.getCardsRemaining());
           }
      }
      protected void writePlayerDetails(int startRow, PlayerDetails details) {

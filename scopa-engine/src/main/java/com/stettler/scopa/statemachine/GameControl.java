@@ -38,6 +38,7 @@ public class GameControl extends EventSource {
         status.setGameId(gameId);
         status.setPlayer(player);
         status.setTable(this.gameplay.getTableCards());
+        status.setCardsRemaining(this.gameplay.getDeck().size());
 
         if (this.currentPlayer != null) {
             status.setCurrentPlayerId(currentPlayer.getDetails().getPlayerId());

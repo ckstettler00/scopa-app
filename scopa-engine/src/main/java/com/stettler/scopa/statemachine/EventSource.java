@@ -15,7 +15,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 public abstract class EventSource {
-    String eventLoopId = UUID.randomUUID().toString();
+
+    String sourceId = UUID.randomUUID().toString();
     Logger logger = LoggerFactory.getLogger(getClass().getName());
 
     private List<GameEventListener> listeners = new ArrayList<>();
@@ -24,8 +25,16 @@ public abstract class EventSource {
 
     private Map<EventType, Consumer<GameEvent>> handlers = new ConcurrentHashMap<>();
 
-    Thread eventLoop = new Thread(this::run, "event-loop-" + eventLoopId);
+    Thread eventLoop = new Thread(this::run, "event-loop-" + sourceId);
     boolean done = false;
+
+    public String getSourceId() {
+        return sourceId;
+    }
+
+    public void setSourceId(String sourceId) {
+        this.sourceId = sourceId;
+    }
 
     public GameEvent nextEvent() {
         GameEvent event = null;
@@ -88,6 +97,8 @@ public abstract class EventSource {
      */
     public void triggerEvent(GameEvent event) {
         try {
+            logger.debug("Setting the events source id {}", this.getSourceId());
+            event.setFromSourceId(this.getSourceId());
             logger.debug("triggering event {}", event);
             this.eventSource.put(event);
         } catch (InterruptedException e) {

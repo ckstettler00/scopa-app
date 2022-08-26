@@ -11,6 +11,8 @@ public class GameStatus {
     private String currentPlayerId;
     private List<Card> table;
 
+    private Integer cardsRemaining;
+
     public GameStatus() {
     }
 
@@ -44,6 +46,14 @@ public class GameStatus {
 
     public void setCurrentPlayerId(String currentPlayerId) {
         this.currentPlayerId = currentPlayerId;
+    }
+
+    public Integer getCardsRemaining() {
+        return cardsRemaining;
+    }
+
+    public void setCardsRemaining(Integer cardsRemaining) {
+        this.cardsRemaining = cardsRemaining;
     }
 
     @Override
