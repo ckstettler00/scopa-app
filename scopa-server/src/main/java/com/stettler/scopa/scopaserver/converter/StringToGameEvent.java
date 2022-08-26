@@ -8,7 +8,6 @@ import com.stettler.scopa.scopaserver.model.ScopaMessage;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 

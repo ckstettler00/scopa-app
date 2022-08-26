@@ -1,6 +1,5 @@
 package com.stettler.scopa;
 
-import com.stettler.scopa.events.NewGameEvent;
 import com.stettler.scopa.events.RegisterEvent;
 import com.stettler.scopa.model.PlayerDetails;
 import com.stettler.scopa.statemachine.CliPlayer;
@@ -25,13 +24,8 @@ public class scopaCliMain {
         PlayerDetails p1d = player1Source.promptForPlayerDetails();
         PlayerDetails p2d = player2Source.promptForPlayerDetails();
 
-        control.registerPlayer(p1d, player1Source);
+        control.initializeGame(p1d, player1Source);
         control.registerPlayer(p2d, player2Source);
-
-        control.triggerEvent(new NewGameEvent());
-
-        control.triggerEvent(new RegisterEvent(p1d));
-        control.triggerEvent(new RegisterEvent(p2d));
 
         control.waitForGameComplete();
 

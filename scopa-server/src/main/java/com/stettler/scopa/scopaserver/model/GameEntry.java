@@ -1,5 +1,6 @@
 package com.stettler.scopa.scopaserver.model;
 
+import com.stettler.scopa.statemachine.State;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import java.util.List;
@@ -10,9 +11,12 @@ public class GameEntry {
     private List<String> playerList;
     private String gameId;
 
-    public GameEntry(List<String> playerList, String gameId) {
+    private String gameState;
+
+    public GameEntry(List<String> playerList, String gameId, State state) {
         this.playerList = playerList;
         this.gameId = gameId;
+        this.gameState = state.name();
     }
 
     public GameEntry() {
@@ -32,6 +36,14 @@ public class GameEntry {
 
     public void setGameId(String gameId) {
         this.gameId = gameId;
+    }
+
+    public String getGameState() {
+        return gameState;
+    }
+
+    public void setGameState(String gameState) {
+        this.gameState = gameState;
     }
 
     @Override

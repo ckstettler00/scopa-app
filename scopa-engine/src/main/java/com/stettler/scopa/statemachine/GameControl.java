@@ -31,7 +31,7 @@ public class GameControl extends EventSource {
     int turnCounter = -1;
     int roundCounter = -1;
 
-    Gameplay gameplay = null;
+    Gameplay gameplay = new Gameplay();
 
     public GameStatus getStatus(Player player) {
         GameStatus status = new GameStatus();
@@ -58,7 +58,7 @@ public class GameControl extends EventSource {
     }
 
     public Player getPlayer2() {
-        if(playerOrder.size() == 1) {
+        if(playerOrder.size() <= 1) {
             return null;
         }
         return this.playerOrder.get(1);
@@ -68,12 +68,26 @@ public class GameControl extends EventSource {
         this.playerOrder.set(1, p);
     }
 
+    public State getCurrentState() {
+        return currentState;
+    }
+
+    public void initializeGame(PlayerDetails details, EventSource source) {
+        logger.info("Starting a new game id:{} by player:{}", this.getGameId(), details);
+        if (!currentState.equals(State.INIT)) {
+            throw new ScopaRuntimeException("Invalid state to create a game:" + this.currentState);
+        }
+        changeState(State.WAIT_FOR_PLAYER1);
+
+        this.registerPlayer(details, source);
+    }
+
     /**
      * Register the player with the game controller.
      *
      * @param source
      */
-    public boolean registerPlayer(PlayerDetails details, EventSource source) {
+    synchronized public boolean registerPlayer(PlayerDetails details, EventSource source) {
         logger.info("Registering Player event source. {}", source);
 
         if (!currentState.equals(State.WAIT_FOR_PLAYER1) && !currentState.equals(State.WAIT_FOR_PLAYER2)) {
@@ -107,7 +121,6 @@ public class GameControl extends EventSource {
         logger.info("Creating new game controller - id {}", gameId);
         currentState = State.INIT;
         this.addHandler(EventType.REGISTER, this::handleRegister);
-        this.addHandler(EventType.NEWGAME, this::handleNewGame);
         this.addHandler(EventType.START_ROUND, this::handleStartRound);
         this.addHandler(EventType.PLAY_RESP, this::handlePlayResponse);
         this.addHandler(EventType.GAMEOVER, this::handleGameOver);
@@ -177,6 +190,22 @@ public class GameControl extends EventSource {
             return Pair.of(player2, this.playerMap.get(player2.getDetails().getPlayerId()));
         }
         throw new PlayerNotFoundException(id);
+    }
+
+    /**
+     * Determine where to send the message back to given the source id.
+     * @param sourceId
+     * @return
+     */
+    protected EventSource lookupSourceBySourceId(String sourceId) {
+
+        for (EventSource s : this.playerMap.values()) {
+            if (s.getSourceId().equals(sourceId)) {
+                return s;
+            }
+        }
+        logger.error("No matching event source id: {}", sourceId);
+        throw new ScopaRuntimeException("No matching source id found.");
     }
 
     protected void handleGameOver(GameEvent event) {
@@ -361,13 +390,6 @@ public class GameControl extends EventSource {
             this.triggerEvent(new StartRoundEvent());
             return;
         }
-    }
-
-    protected void handleNewGame(GameEvent event) {
-        logger.debug("handleNewGame: {}", event);
-        this.gameplay = new Gameplay();
-        changeState(State.WAIT_FOR_PLAYER1);
-        return;
     }
 
     protected void sendStatuses() {

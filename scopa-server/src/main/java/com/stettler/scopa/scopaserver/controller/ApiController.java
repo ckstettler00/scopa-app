@@ -10,16 +10,13 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("scopa2")
-
+@RequestMapping("/scopa")
 public class ApiController {
     @Autowired
     private GameService service;
 
-    @GetMapping(name = "gamelist", produces = "application/json")
+    @GetMapping(path = "/gamelist", produces = "application/json")
     public List<GameEntry> getGameList(){
-
         return service.getGameList();
     }
-
 }

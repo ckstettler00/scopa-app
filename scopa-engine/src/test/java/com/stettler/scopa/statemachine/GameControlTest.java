@@ -408,9 +408,11 @@ public class GameControlTest {
     @Test
     void testNewGame() throws Exception {
         assertThat(control.currentState).isEqualTo(State.INIT);
-        control.triggerEvent(new NewGameEvent());
-        Thread.sleep(1000L);
-        assertThat(control.currentState).isEqualTo(State.WAIT_FOR_PLAYER1);
+        this.control.initializeGame(createPlayer1Details(), player1);
+        Thread.sleep(250L);
+
+        // initializeGame also registers player1 so we will be waiting for player.
+        assertThat(control.currentState).isEqualTo(State.WAIT_FOR_PLAYER2);
 
     }
 
@@ -779,7 +781,7 @@ public class GameControlTest {
 
         PlayerDetails d1 = createPlayer1Details();
         PlayerDetails d2 = createPlayer2Details();
-        control.registerPlayer(d1, player1);
+        control.initializeGame(d1, player1);
         control.registerPlayer(d2, player2);
         Thread.sleep(250);
 

@@ -15,6 +15,10 @@ public class GameService {
     @Autowired
     GameRegistry registry;
 
+    /**
+     * Return a list of games currently registered in the game registry.
+     * @return
+     */
     public List<GameEntry> getGameList(){
 
         List<String> idList = registry.getGameIds();
@@ -32,7 +36,7 @@ public class GameService {
             if(temp.getPlayer2() != null){
                 names.add(temp.getPlayer2().getDetails().getScreenHandle());
             }
-            entryList.add(new GameEntry(names, idList.get(i)));
+            entryList.add(new GameEntry(names, idList.get(i), temp.getCurrentState()));
         }
         return entryList;
     }

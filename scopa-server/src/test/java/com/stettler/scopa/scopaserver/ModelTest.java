@@ -18,8 +18,6 @@ public class ModelTest {
         ScopaMessage m = new ScopaMessage();
 
         m.setMessageType(EventType.NEWGAME.name());
-        m.setPayload(mapper.writeValueAsString(new NewGameEvent()));
-
         System.out.println(mapper.writeValueAsString(m));
 
         PlayerDetails p = new PlayerDetails();
@@ -32,6 +30,12 @@ public class ModelTest {
         r.setGameId("62357ba0-00be-4fb3-bcd9-0fa7c1cec274");
         m.setPayload(mapper.writeValueAsString(r));
         System.out.println(mapper.writeValueAsString(m));
+
+        m.setMessageType(EventType.NEWGAME.name());
+        m.setPayload(mapper.writeValueAsString(new NewGameEvent(p)));
+        System.out.println(mapper.writeValueAsString(m));
+
+
     }
 
 }
