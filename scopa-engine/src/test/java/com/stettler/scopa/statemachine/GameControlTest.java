@@ -502,8 +502,9 @@ public class GameControlTest {
         GameStatusEvent tmpe = (GameStatusEvent) player1.getEvents().get(0);
         assertThat(tmpe.getStatus().getTable()).containsExactly(new Card(1, Suit.COINS), new Card(2, Suit.COINS),
                 new Card(6, Suit.COINS)).isEqualTo(this.control.gameplay.tableCards);
-        assertThat(tmpe.getStatus().getPlayer().getHand()).containsExactly(new Card(1, Suit.CUPS), new Card(2, Suit.CUPS),
+        assertThat(tmpe.getStatus().getPlayerHand()).containsExactly(new Card(1, Suit.CUPS), new Card(2, Suit.CUPS),
                 new Card(3, Suit.CUPS)).isEqualTo(this.control.getPlayer1().getHand());
+        assertThat(tmpe.getStatus().getOpponentCardCount()).isEqualTo(this.control.getPlayer2().getHand().size());
 
         assertThat(control.currentState).isEqualTo(State.WAIT_4_PLAYER2_MOVE);
         assertThat(player2.getEvents().get(1)).isInstanceOf(PlayRequestEvent.class);
@@ -516,8 +517,9 @@ public class GameControlTest {
         // Check to see if the deck was updated in the status.
         tmpe = (GameStatusEvent) player2.getEvents().get(0);
         assertThat(tmpe.getStatus().getTable()).containsExactly(new Card(6, Suit.COINS));
-        assertThat(tmpe.getStatus().getPlayer().getHand()).containsExactly(new Card(1, Suit.SWORDS), new Card(2, Suit.SWORDS), new Card(4, Suit.SWORDS))
+        assertThat(tmpe.getStatus().getPlayerHand()).containsExactly(new Card(1, Suit.SWORDS), new Card(2, Suit.SWORDS), new Card(4, Suit.SWORDS))
                 .isEqualTo(this.control.getPlayer2().getHand());
+        assertThat(tmpe.getStatus().getOpponentCardCount()).isEqualTo(this.control.getPlayer1().getHand().size());
 
         assertThat(control.currentState).isEqualTo(State.WAIT_4_PLAYER1_MOVE);
         assertThat(player1.getEvents().get(1)).isInstanceOf(PlayRequestEvent.class);
@@ -758,8 +760,8 @@ public class GameControlTest {
         assertThat(oe.getWinningScore()).isEqualTo(12);
     }
 
-    private PlayerDetails createPlayer1Details() {
-        PlayerDetails p1 = new PlayerDetails();
+    private com.stettler.scopa.model.PlayerDetails createPlayer1Details() {
+        com.stettler.scopa.model.PlayerDetails p1 = new com.stettler.scopa.model.PlayerDetails();
         p1.setScreenHandle("player1");
         p1.setEmailAddr("player1@gmail.com");
         p1.setPlayerSecret("player1secret");
@@ -767,8 +769,8 @@ public class GameControlTest {
         return p1;
     }
 
-    private PlayerDetails createPlayer2Details() {
-        PlayerDetails p = new PlayerDetails();
+    private com.stettler.scopa.model.PlayerDetails createPlayer2Details() {
+        com.stettler.scopa.model.PlayerDetails p = new com.stettler.scopa.model.PlayerDetails();
         p.setScreenHandle("player2");
         p.setEmailAddr("player2@gmail.com");
         p.setPlayerSecret("player2secret");
@@ -779,8 +781,8 @@ public class GameControlTest {
     private void newGameAndRegistration() throws Exception {
         triggerEvent(control, new NewGameEvent());
 
-        PlayerDetails d1 = createPlayer1Details();
-        PlayerDetails d2 = createPlayer2Details();
+        com.stettler.scopa.model.PlayerDetails d1 = createPlayer1Details();
+        com.stettler.scopa.model.PlayerDetails d2 = createPlayer2Details();
         control.initializeGame(d1, player1);
         control.registerPlayer(d2, player2);
         Thread.sleep(250);
@@ -788,11 +790,11 @@ public class GameControlTest {
         assertThat(control.currentState).isEqualTo(State.WAIT_4_PLAYER1_MOVE);
 
         GameStatusEvent ps1 = (GameStatusEvent) player1.getEvents().get(0);
-        this.player1Id = ps1.getStatus().getPlayer().getDetails().getPlayerId();
+        this.player1Id = ps1.getStatus().getPlayerDetails().getPlayerId();
         assertThat(d1.getPlayerId()).isEqualTo(this.player1Id);
 
         GameStatusEvent ps2 = (GameStatusEvent) player2.getEvents().get(0);
-        this.player2Id = ps2.getStatus().getPlayer().getDetails().getPlayerId();
+        this.player2Id = ps2.getStatus().getPlayerDetails().getPlayerId();
         assertThat(d2.getPlayerId()).isEqualTo(this.player2Id);
     }
 

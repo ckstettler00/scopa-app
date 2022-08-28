@@ -9,9 +9,8 @@ Feature: Test scopa server.
       | screenHandle | nathan       |
       | email        | nathan@email |
     When player 1 creates a new game
-    Then the game state becomes "WAIT_FOR_PLAYER2"
     When player 2 joins the game
-    Then the game state becomes "WAIT_FOR_PLAYER1_MOVE"
+    Then the game state becomes "WAIT_4_PLAYER1_MOVE"
     And player 1 receives the game status
     And player 2 receives the game status
     And player 1 receives a move request

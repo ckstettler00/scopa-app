@@ -47,7 +47,9 @@ public class WebSocketEventSource extends EventSource {
         // Trigger the new game event first
         game.initializeGame(((NewGameEvent)event).getDetails(), this);
 
-        logger.info("registered new game: {} {}", event, game.getGameId());
+        logger.info("registered game id {} back to the client.", game.getGameId());
+        NewGameEventResp resp = new NewGameEventResp(game.getGameId());
+        sendToClient(resp);
     }
 
     protected void handleRegistration(GameEvent event) {

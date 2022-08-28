@@ -1,5 +1,6 @@
-package com.stettler.scopa.scopaserver.cucumber.steps;
+package com.stettler.scopa.scopaserver.cucumber.util;
 
+import com.stettler.scopa.model.GameStatus;
 import com.stettler.scopa.model.PlayerDetails;
 import com.stettler.scopa.statemachine.EventSource;
 import org.springframework.web.socket.WebSocketSession;
@@ -10,6 +11,8 @@ import java.util.List;
 public class TestContext {
 
     String gameId;
+
+    GameStatus gameStatus;
 
     private List<PlayerDetails> players = new ArrayList<>();
     private List<WebSocketSession> sessions = new ArrayList<>();
@@ -55,7 +58,15 @@ public class TestContext {
     public PlayerDetails getPlayer(Integer idx) {
         return this.players.get(idx);
     }
-    public EventSource getEventSource(Integer idx) {
-        return eventSources.get(idx);
+    public TestEventSource getEventSource(Integer idx) {
+        return (TestEventSource) eventSources.get(idx);
+    }
+
+    public GameStatus getGameStatus() {
+        return gameStatus;
+    }
+
+    public void setGameStatus(GameStatus gameStatus) {
+        this.gameStatus = gameStatus;
     }
 }

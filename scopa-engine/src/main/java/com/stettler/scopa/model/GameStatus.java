@@ -1,15 +1,21 @@
 package com.stettler.scopa.model;
 
-import com.stettler.scopa.statemachine.Player;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import java.util.List;
 
 public class GameStatus {
+
+    private String currentGameState;
     private String gameId;
-    private Player player;
+    private PlayerDetails playerDetails;
+
     private String currentPlayerId;
     private List<Card> table;
+
+    private List<Card> playerHand;
+
+    private int opponentCardCount;
 
     private Integer cardsRemaining;
 
@@ -24,12 +30,12 @@ public class GameStatus {
         this.gameId = gameId;
     }
 
-    public Player getPlayer() {
-        return player;
+    public PlayerDetails getPlayerDetails() {
+        return playerDetails;
     }
 
-    public void setPlayer(Player player) {
-        this.player = player;
+    public void setPlayerDetails(PlayerDetails playerDetails) {
+        this.playerDetails = playerDetails;
     }
 
     public List<Card> getTable() {
@@ -54,6 +60,30 @@ public class GameStatus {
 
     public void setCardsRemaining(Integer cardsRemaining) {
         this.cardsRemaining = cardsRemaining;
+    }
+
+    public List<Card> getPlayerHand() {
+        return playerHand;
+    }
+
+    public void setPlayerHand(List<Card> playerHand) {
+        this.playerHand = playerHand;
+    }
+
+    public int getOpponentCardCount() {
+        return opponentCardCount;
+    }
+
+    public void setOpponentCardCount(int opponentCardCount) {
+        this.opponentCardCount = opponentCardCount;
+    }
+
+    public String getCurrentGameState() {
+        return currentGameState;
+    }
+
+    public void setCurrentGameState(String currentGameState) {
+        this.currentGameState = currentGameState;
     }
 
     @Override
