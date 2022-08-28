@@ -57,6 +57,10 @@ public class GameControl extends EventSource {
         return status;
     }
 
+    public List<Player> getAllPlayers() {
+        return this.playerOrder;
+    }
+
     public Player getPlayer1() {
         if (playerOrder.size() == 0) {
             return null;
