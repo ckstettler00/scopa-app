@@ -1,5 +1,6 @@
 package com.stettler.scopa.scopaserver.cucumber.steps;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stettler.scopa.events.*;
 import com.stettler.scopa.model.GameStatus;
 import com.stettler.scopa.model.PlayerDetails;
@@ -12,16 +13,21 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.apache.commons.lang3.tuple.Pair;
+import org.assertj.core.util.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.client.WebSocketClient;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
@@ -29,7 +35,11 @@ import static org.assertj.core.api.Java6Assertions.assertThat;
 public class StepDefinitions{
     Logger logger = LoggerFactory.getLogger(getClass().getName());
 
+    ObjectMapper mapper = new ObjectMapper();
+
     private final static int MAX_WAIT = 1000;
+
+    TestRestTemplate template = new TestRestTemplate();
 
     @Autowired
     ConversionService converter;
@@ -97,20 +107,29 @@ public class StepDefinitions{
 
     }
     @Then("the game state becomes {string}")
-    public void verifyCurrentGameState(String state) {
-        GameStatus status = TestContext.context().getGameStatus();
+    public void verifyCurrentGameState(String state) throws Exception {
+
+        ResponseEntity<List> statuses = template.getForEntity("http://localhost:8080/scopa/gamelist/"+TestContext.context().getGameId(),
+                List.class);
+        assertThat(statuses.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(statuses.getBody().size()).isGreaterThan(0);
+        GameStatus status = mapper.convertValue(statuses.getBody().get(0), GameStatus.class);
         logger.info("verifyCurrentGameState {} status:{}", state, status);
         assertThat(status.getCurrentGameState()).isEqualTo(state);
     }
 
     @And("player {int} receives the game status")
     public void playerReceivesTheGameStatus(Integer player) {
-        logger.info("playerReceivesTheGameStatus {}", player);
+        logger.info("player {} receives the game status", player);
+        Optional<GameEvent> status = TestContext.context().getEventSource(player-1).waitForEvent(EventType.STATUS, 1000);
+        assertThat(status.isPresent()).isTrue();
     }
 
     @And("player {int} receives a move request")
     public void playerReceivesMoveRequest(Integer player) {
-        logger.info("player receives a move request {}", player);
+        logger.info("player {} receives a move request", player);
+        Optional<GameEvent> status = TestContext.context().getEventSource(player-1).waitForEvent(EventType.PLAY_REQ, 1000);
+        assertThat(status.isPresent()).isTrue();
     }
 
     private Pair<WebSocketSession, EventSource> createSession() throws Exception {
