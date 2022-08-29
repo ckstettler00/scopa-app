@@ -116,6 +116,7 @@ public class StepDefinitions{
         GameStatus status = mapper.convertValue(statuses.getBody().get(0), GameStatus.class);
         logger.info("verifyCurrentGameState {} status:{}", state, status);
         assertThat(status.getCurrentGameState()).isEqualTo(state);
+        TestContext.context().setGameStatus(status);
     }
 
     @And("player {int} receives the game status")
@@ -131,6 +132,25 @@ public class StepDefinitions{
         Optional<GameEvent> status = TestContext.context().getEventSource(player-1).waitForEvent(EventType.PLAY_REQ, 1000);
         assertThat(status.isPresent()).isTrue();
     }
+
+    @And("player {int} has {int} cards in their hand")
+    public void playerHasCardsRemaining(int player, int cards) {
+        Optional<GameEvent> statusEvent = TestContext.context().getEventSource(player-1).waitForEvent(EventType.STATUS, 1000);
+        assertThat(statusEvent.isPresent()).isTrue();
+
+        GameStatus status = ((GameStatusEvent)statusEvent.get()).getStatus();
+        assertThat(status.getPlayerHand()).hasSize(cards);
+    }
+
+    @And ("the table contains {int} cards")
+    public void tableContainsCards(int cards) {
+        assertThat(TestContext.context().getGameStatus().getTable()).hasSize(cards);
+    }
+    @And("player {int} is the current player")
+    public void currentPlayer(int player){
+        assertThat(TestContext.context().getPlayer(player -1).getPlayerId()).isEqualTo(TestContext.context().getGameStatus().getCurrentPlayerId());
+    }
+
 
     private Pair<WebSocketSession, EventSource> createSession() throws Exception {
         WebSocketClient client = new StandardWebSocketClient();
