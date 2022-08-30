@@ -142,7 +142,7 @@ public class Display {
      }
 
      public void updateGameStatus(GameStatus status) {
-          String playerId = status.getPlayer().getDetails().getPlayerId();
+          String playerId = status.getPlayerDetails().getPlayerId();
           String currentPlayerId = status.getCurrentPlayerId();
 
           if (!playerIds.contains(playerId)) {
@@ -166,12 +166,12 @@ public class Display {
 
           if (tmpIds.size() > 1) {
                String pid = tmpIds.get(1);
-               writePlayerDetails(2, gameStatus.get(pid).getPlayer().getDetails());
+               writePlayerDetails(2, gameStatus.get(pid).getPlayerDetails());
                writePlayerScore(3, gameStatus.get(pid).getPlayer().getScore());
           }
           if (tmpIds.size() > 0) {
                String pid = tmpIds.get(0);
-               writePlayerDetails(21, gameStatus.get(pid).getPlayer().getDetails());
+               writePlayerDetails(21, gameStatus.get(pid).getPlayerDetails();
                writePlayerScore(22, gameStatus.get(pid).getPlayer().getScore());
           }
 

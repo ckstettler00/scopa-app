@@ -14,7 +14,7 @@
     <relativePath/> <!-- lookup parent from repository -->
   </parent>
   <modules>
-    <module>scopa-cli2</module>
+    <!--<module>scopa-cli2</module> -->
     <module>scopa-engine</module>
     <module>scopa-server</module>
   </modules>

@@ -1,7 +1,7 @@
 package com.stettler.scopa.statemachine;
 
-import com.stettler.scopa.exceptions.*;
 import com.stettler.scopa.events.*;
+import com.stettler.scopa.exceptions.*;
 import com.stettler.scopa.model.*;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -19,6 +19,8 @@ public class GameControl extends EventSource {
 
     State currentState;
 
+    Map<EventType, Consumer<GameEvent>> handlers = new ConcurrentHashMap<>();
+
     Map<String, EventSource> playerMap = new ConcurrentHashMap<>();
     List<Player> playerOrder = new ArrayList<>();
 
@@ -29,22 +31,40 @@ public class GameControl extends EventSource {
     int turnCounter = -1;
     int roundCounter = -1;
 
-    Gameplay gameplay = null;
+    Gameplay gameplay = new Gameplay();
 
     public GameStatus getStatus(Player player) {
         GameStatus status = new GameStatus();
         status.setGameId(gameId);
-        status.setPlayer(player);
+        status.setPlayerDetails(player.getDetails());
         status.setTable(this.gameplay.getTableCards());
-        status.setDeck(this.gameplay.getDeck());
+        status.setCardsRemaining(this.gameplay.getDeck().size());
+        status.setPlayerHand(player.getHand());
+        status.setCurrentGameState(this.currentState.name());
 
+        // If hands have been dealt then set the opponentCardCount
+        if (this.playerOrder.size() >1 && this.currentPlayer!=null) {
+            if (this.playerOrder.get(0).getDetails().getPlayerId().
+                    equals(player.getDetails().getPlayerId())) {
+                status.setOpponentCardCount(this.playerOrder.get(1).getHand().size());
+            } else {
+                status.setOpponentCardCount(this.playerOrder.get(0).getHand().size());
+            }
+        }
         if (this.currentPlayer != null) {
             status.setCurrentPlayerId(currentPlayer.getDetails().getPlayerId());
         }
         return status;
     }
 
+    public List<Player> getAllPlayers() {
+        return this.playerOrder;
+    }
+
     public Player getPlayer1() {
+        if (playerOrder.size() == 0) {
+            return null;
+        }
         return this.playerOrder.get(0);
     }
 
@@ -53,6 +73,9 @@ public class GameControl extends EventSource {
     }
 
     public Player getPlayer2() {
+        if (playerOrder.size() <= 1) {
+            return null;
+        }
         return this.playerOrder.get(1);
     }
 
@@ -60,12 +83,26 @@ public class GameControl extends EventSource {
         this.playerOrder.set(1, p);
     }
 
+    public State getCurrentState() {
+        return currentState;
+    }
+
+    public void initializeGame(PlayerDetails details, EventSource source) {
+        logger.info("Starting a new game id:{} by player:{}", this.getGameId(), details);
+        if (!currentState.equals(State.INIT)) {
+            throw new ScopaRuntimeException("Invalid state to create a game:" + this.currentState);
+        }
+        changeState(State.WAIT_FOR_PLAYER1);
+
+        this.registerPlayer(details, source);
+    }
+
     /**
      * Register the player with the game controller.
      *
      * @param source
      */
-    public boolean registerPlayer(PlayerDetails details, EventSource source) {
+    synchronized public boolean registerPlayer(PlayerDetails details, EventSource source) {
         logger.info("Registering Player event source. {}", source);
 
         if (!currentState.equals(State.WAIT_FOR_PLAYER1) && !currentState.equals(State.WAIT_FOR_PLAYER2)) {
@@ -99,7 +136,6 @@ public class GameControl extends EventSource {
         logger.info("Creating new game controller - id {}", gameId);
         currentState = State.INIT;
         this.addHandler(EventType.REGISTER, this::handleRegister);
-        this.addHandler(EventType.NEWGAME, this::handleNewGame);
         this.addHandler(EventType.START_ROUND, this::handleStartRound);
         this.addHandler(EventType.PLAY_RESP, this::handlePlayResponse);
         this.addHandler(EventType.GAMEOVER, this::handleGameOver);
@@ -112,6 +148,7 @@ public class GameControl extends EventSource {
 
     /**
      * General event handler.
+     *
      * @param event
      */
     @Override
@@ -123,7 +160,7 @@ public class GameControl extends EventSource {
     @Override
     public void handleException(Exception ex) {
         if (ex instanceof ScopaException) {
-            ScopaException sex = (ScopaException)ex;
+            ScopaException sex = (ScopaException) ex;
             logger.error("ScopaExcepton:", sex);
             Pair<Player, EventSource> pair = lookupPlayer(sex.getPlayerId());
             if (pair != null) {
@@ -171,6 +208,23 @@ public class GameControl extends EventSource {
         throw new PlayerNotFoundException(id);
     }
 
+    /**
+     * Determine where to send the message back to given the source id.
+     *
+     * @param sourceId
+     * @return
+     */
+    protected EventSource lookupSourceBySourceId(String sourceId) {
+
+        for (EventSource s : this.playerMap.values()) {
+            if (s.getSourceId().equals(sourceId)) {
+                return s;
+            }
+        }
+        logger.error("No matching event source id: {}", sourceId);
+        throw new ScopaRuntimeException("No matching source id found.");
+    }
+
     protected void handleGameOver(GameEvent event) {
         Player player1 = this.playerOrder.get(0);
         Player player2 = this.playerOrder.get(1);
@@ -214,7 +268,7 @@ public class GameControl extends EventSource {
         // Check to see if it is a move request from the appropriate player.
         if (!event.getPlayerId().equals(currentPlayer.getDetails().getPlayerId())) {
             logger.error("Detected play out of turn.");
-            throw new UnexpectedEventException(event.getPlayerId(),event, "Played out of turn");
+            throw new UnexpectedEventException(event.getPlayerId(), event, "Played out of turn");
         }
 
         // Make sure we are waiting for a player move.
@@ -225,7 +279,7 @@ public class GameControl extends EventSource {
         }
 
         // Verify and create a move.
-        Move move = ((PlayResponseEvent)event).getMove();
+        Move move = ((PlayResponseEvent) event).getMove();
         if (responseEvent.getMove().getType().equals(MoveType.PICKUP)) {
             logger.info("Playing pickup {}", move);
             gameplay.handlePickup(responsePlayer.getLeft(), (Pickup) move);
@@ -244,9 +298,9 @@ public class GameControl extends EventSource {
                     currentPlayer.setScore(currentPlayer.getScore() + 1);
                 }
             }
-        } else if (responseEvent.getMove().getType().equals(MoveType.DISCARD)){
+        } else if (responseEvent.getMove().getType().equals(MoveType.DISCARD)) {
             logger.info("Received discard play {}", move);
-            gameplay.handleDiscard(responsePlayer.getLeft(),(Discard) move);
+            gameplay.handleDiscard(responsePlayer.getLeft(), (Discard) move);
         } else {
             // Bad play so re-ask for a valid move.
             logger.error("An invalid play was attempted {}", move);
@@ -335,11 +389,11 @@ public class GameControl extends EventSource {
                 currentPlayer.getDetails().getScreenHandle());
         currentPlayerSource.triggerEvent(new PlayRequestEvent(currentPlayer.getDetails()));
     }
+
     protected synchronized void handleRegister(GameEvent event) {
         logger.debug("handleRegister: {}", event);
         if (currentState != State.WAIT_FOR_PLAYER1 &&
-        currentState != State.WAIT_FOR_PLAYER2)
-        {
+                currentState != State.WAIT_FOR_PLAYER2) {
             throw new InvalidStateTransitionException(event.getPlayerId(), currentState, event);
         }
 
@@ -353,14 +407,6 @@ public class GameControl extends EventSource {
             this.triggerEvent(new StartRoundEvent());
             return;
         }
-    }
-
-    protected void handleNewGame(GameEvent event) {
-        logger.debug("handleNewGame: {}", event);
-        this.gameplay = new Gameplay();
-        changeState(State.WAIT_FOR_PLAYER1);
-        sendStatuses();
-        return;
     }
 
     protected void sendStatuses() {
