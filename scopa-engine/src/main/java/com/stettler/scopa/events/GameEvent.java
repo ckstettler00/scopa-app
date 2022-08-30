@@ -1,11 +1,9 @@
 package com.stettler.scopa.events;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.stettler.scopa.model.Discard;
-import com.stettler.scopa.model.Invalid;
-import com.stettler.scopa.model.Pickup;
 import com.stettler.scopa.statemachine.Player;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
@@ -25,10 +23,25 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 public abstract class GameEvent {
     EventType eventType = EventType.NOOP;
 
+    @JsonIgnore
+    private String fromSourceId;
+
     private String playerId;
 
     public GameEvent() {
 
+    }
+
+    public String getFromSourceId() {
+        return fromSourceId;
+    }
+
+    public void setFromSourceId(String fromSourceId) {
+        this.fromSourceId = fromSourceId;
+    }
+
+    public void setEventType(EventType eventType) {
+        this.eventType = eventType;
     }
 
     public String getPlayerId() {

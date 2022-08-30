@@ -1,10 +1,8 @@
 package com.stettler.scopa.statemachine;
 
 import com.stettler.scopa.model.Card;
-import com.stettler.scopa.model.PlayerDetails;
 import com.stettler.scopa.model.Suit;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.commons.util.ReflectionUtils;
 import org.powermock.reflect.Whitebox;
 
 import java.util.*;
@@ -136,7 +134,7 @@ public class PlayerTest {
     }
     @Test
     void testDetails() {
-        PlayerDetails d = new PlayerDetails();
+        com.stettler.scopa.model.PlayerDetails d = new com.stettler.scopa.model.PlayerDetails();
         Player p = new Player();
         p.setDetails(d);
         assertThat(d).isEqualTo(p.getDetails());
@@ -144,7 +142,7 @@ public class PlayerTest {
 
     @Test
     void testClearScore() {
-        Player  p = new Player();
+        Player p = new Player();
         Whitebox.setInternalState(p,"score",10);
         Whitebox.setInternalState(p,"coins",1);
         Whitebox.setInternalState(p,"total",2);

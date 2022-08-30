@@ -17,24 +17,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.core.convert.ConversionService;
-import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.web.socket.TextMessage;
-import org.springframework.web.socket.WebSocketHandler;
-import org.springframework.web.socket.WebSocketHttpHeaders;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.client.WebSocketClient;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
-import org.springframework.web.socket.sockjs.client.SockJsClient;
-import org.springframework.web.socket.sockjs.client.WebSocketTransport;
 
-import java.net.URI;
-import java.util.Arrays;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
@@ -104,14 +95,18 @@ class ScopaServerApplicationTests {
 	void setup() throws Exception {
 		WebSocketClient client = new StandardWebSocketClient();
 		handler = new SocketHandler(converter);
-		ListenableFuture<WebSocketSession> session = client.doHandshake(handler, String.format("ws://localhost:8080/scopa"));
+		ListenableFuture<WebSocketSession> session = client.doHandshake(handler, String.format("ws://localhost:8080/scopaevents"));
 		this.session = session.get();
 	}//  w   w   w  .  d e   mo   2   s.  c   o m
 
 
 	@Test
 	void startNewGame() throws Exception {
-		String msg = converter.convert(new NewGameEvent(), String.class);
+		PlayerDetails details = new PlayerDetails();
+		details.setPlayerSecret("playersecret");
+		details.setEmailAddr("player@gmail.com");
+		details.setPlayerToken("playertoken");
+		String msg = converter.convert(new NewGameEvent(details), String.class);
 		session.sendMessage(new TextMessage(msg));
 	}
 	@Test

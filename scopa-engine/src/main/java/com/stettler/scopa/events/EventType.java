@@ -2,6 +2,7 @@ package com.stettler.scopa.events;
 
 public enum EventType {
     NEWGAME,
+    NEWGAME_RESP,
     REGISTER,
     START_ROUND,
     STATUS,

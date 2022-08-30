@@ -8,7 +8,6 @@ import com.stettler.scopa.scopaserver.model.ScopaMessage;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -18,8 +17,12 @@ public class StringToGameEvent implements Converter<String, GameEvent> {
     Map<String, Class<?>> eventClass = new ConcurrentHashMap<>();
 
     public StringToGameEvent() {
+        eventClass.put(EventType.ERROR.name(), ErrorEvent.class);
+        eventClass.put(EventType.STATUS.name(), GameStatusEvent.class);
         eventClass.put(EventType.NEWGAME.name(), NewGameEvent.class);
+        eventClass.put(EventType.NEWGAME_RESP.name(), NewGameEventResp.class);
         eventClass.put(EventType.PLAY_RESP.name(), PlayResponseEvent.class);
+        eventClass.put(EventType.PLAY_REQ.name(), PlayRequestEvent.class);
         eventClass.put(EventType.REGISTER.name(), RegisterEvent.class);
     }
 

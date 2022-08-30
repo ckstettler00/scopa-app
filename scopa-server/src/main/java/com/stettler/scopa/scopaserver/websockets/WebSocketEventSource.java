@@ -2,10 +2,9 @@ package com.stettler.scopa.scopaserver.websockets;
 
 import com.stettler.scopa.events.*;
 import com.stettler.scopa.exceptions.ScopaRuntimeException;
-import com.stettler.scopa.scopaserver.config.GameRegistry;
+import com.stettler.scopa.scopaserver.utils.GameRegistry;
 import com.stettler.scopa.statemachine.EventSource;
 import com.stettler.scopa.statemachine.GameControl;
-import com.stettler.scopa.statemachine.Player;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,11 +41,15 @@ public class WebSocketEventSource extends EventSource {
     }
 
     protected void handleNewGameEvent(GameEvent event) {
-        logger.info("Registering new game event: ");
+        logger.info("Registering new game event: {}", event);
         GameControl game = registry.newGame();
-        game.triggerEvent(new NewGameEvent());
-        sendToClient(new ErrorEvent(Player.ALL, "Not an error"));
-        logger.info("Trigger new game event: {} {}", event, game.getGameId());
+
+        // Trigger the new game event first
+        game.initializeGame(((NewGameEvent)event).getDetails(), this);
+
+        logger.info("registered game id {} back to the client.", game.getGameId());
+        NewGameEventResp resp = new NewGameEventResp(game.getGameId());
+        sendToClient(resp);
     }
 
     protected void handleRegistration(GameEvent event) {
@@ -84,7 +87,9 @@ public class WebSocketEventSource extends EventSource {
     protected void sendToClient(GameEvent event) {
         String msg = converter.convert(event, String.class);
         try {
-            this.session.sendMessage(new TextMessage(msg));
+            synchronized(this.session) {
+                this.session.sendMessage(new TextMessage(msg));
+            }
         } catch (IOException e) {
             logger.error("Failed to write message to the client: {}", msg);
             throw new ScopaRuntimeException("Failed to write event to client");
