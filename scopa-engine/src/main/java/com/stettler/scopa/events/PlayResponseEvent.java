@@ -10,8 +10,8 @@ public class PlayResponseEvent extends GameEvent {
         super(EventType.PLAY_RESP);
     }
 
-    public PlayResponseEvent(String playerId, Move move) {
-        super(playerId, EventType.PLAY_RESP);
+    public PlayResponseEvent(String playerId, Move move, String gameId) {
+        super(playerId, EventType.PLAY_RESP, gameId);
         this.move = move;
     }
 

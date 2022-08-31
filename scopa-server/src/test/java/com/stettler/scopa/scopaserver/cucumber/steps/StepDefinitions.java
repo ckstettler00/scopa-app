@@ -2,10 +2,11 @@ package com.stettler.scopa.scopaserver.cucumber.steps;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stettler.scopa.events.*;
-import com.stettler.scopa.model.GameStatus;
-import com.stettler.scopa.model.PlayerDetails;
+import com.stettler.scopa.model.*;
 import com.stettler.scopa.scopaserver.cucumber.util.TestContext;
 import com.stettler.scopa.scopaserver.cucumber.util.TestSocketHandler;
+import com.stettler.scopa.scopaserver.cucumber.util.TestUtils;
+import com.stettler.scopa.scopaserver.model.TestGameSetup;
 import com.stettler.scopa.statemachine.EventSource;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -27,7 +28,11 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.client.WebSocketClient;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 
+import java.net.URI;
+import java.net.URL;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
@@ -40,6 +45,9 @@ public class StepDefinitions{
     private final static int MAX_WAIT = 1000;
 
     TestRestTemplate template = new TestRestTemplate();
+
+    TestUtils utils = new TestUtils();
+
 
     @Autowired
     ConversionService converter;
@@ -151,6 +159,70 @@ public class StepDefinitions{
         assertThat(TestContext.context().getPlayer(player -1).getPlayerId()).isEqualTo(TestContext.context().getGameStatus().getCurrentPlayerId());
     }
 
+    @And("test game setup with")
+    public void gameSetup(DataTable table) throws Exception {
+        TestGameSetup setup = new TestGameSetup();
+        Map<String, String> data = table.asMap(String.class, String.class);
+        if (data.containsKey("player1Hand")) {
+            setup.setPlayer1Hand(utils.parseCards(data.get("player1Hand")));
+        }
+        if (data.containsKey("player2Hand")) {
+            setup.setPlayer2Hand(utils.parseCards(data.get("player2Hand")));
+        }
+        if (data.containsKey("tableCards")) {
+            setup.setTableCards(utils.parseCards(data.get("tableCards")));
+        }
+        if (data.containsKey("cardsRemaining")) {
+            setup.setCardsRemaining(Integer.parseInt(data.get("cardsRemaining")));
+        }
+        logger.info("gameSetup data {}", setup);
+        ResponseEntity<Void> resp = template.postForEntity("http://localhost:8080/testhelper/initgame/"+TestContext.context().getGameId(), setup,  Void.class);
+        assertThat(resp.getStatusCode().is2xxSuccessful()).isTrue();
+    }
+    @And("player {int} picks up {string} with {string}")
+    public void playerPicksUp(int player, String tableString, String playerString) throws Exception {
+        List<Card> playerCard = this.utils.parseCards(playerString);
+        List<Card> tableCards = this.utils.parseCards(tableString);
+        PlayResponseEvent play = new PlayResponseEvent(TestContext.context().getPlayer(player-1).getPlayerId(),
+                new Pickup(playerCard.get(0), tableCards), TestContext.context().getGameId());
+        TestContext.context().getEventSource(player-1).clearEvents();
+        TestContext.context().getSession(player-1).sendMessage(new TextMessage(converter.convert(play, String.class)));
+    }
+    @And("player {int} play was successful")
+    public void playerPlaySuccessful(int player) {
+        Optional<GameEvent> event = TestContext.context().getEventSource(player-1).waitForEvent(EventType.STATUS, 1000);
+        assertThat(event.isPresent()).isTrue();
+    }
+
+    @And("player {int} receives {string} event")
+    public void receivesEvent(int player, String eventString) {
+        EventType type = EventType.valueOf(eventString.toUpperCase());
+        Optional<GameEvent> event = TestContext.context().getEventSource(player-1).waitForEvent(type, 1000);
+        assertThat(event.isPresent()).isTrue();
+    }
+
+    @And("player {int} discards {string}")
+    public void playerDiscards(int player, String playerString) throws Exception {
+        List<Card> playerCard = this.utils.parseCards(playerString);
+        PlayResponseEvent play = new PlayResponseEvent(TestContext.context().getPlayer(player-1).getPlayerId(),
+                new Discard(playerCard.get(0)), TestContext.context().getGameId());
+        TestContext.context().getEventSource(player-1).clearEvents();
+        TestContext.context().getSession(player-1).sendMessage(new TextMessage(converter.convert(play, String.class)));
+        TestContext.context().getEventSource(player-1).clearEvents();
+    }
+
+    @And("player {int} receives error containing {string}")
+    public void playerReceivesError(int player, String msg) {
+        Optional<GameEvent> event = TestContext.context().getEventSource(player-1).waitForEvent(EventType.ERROR, 1000);
+        assertThat(event.isPresent()).isTrue();
+        ErrorEvent err = (ErrorEvent)event.get();
+        assertThat(err.getMessage()).contains(msg);
+    }
+    @And("cards on table are {string}")
+    public void cardsOnTable(String cardsString) {
+        List<Card> table = utils.parseCards(cardsString);
+        assertThat(table).isEqualTo(TestContext.context().getGameStatus().getTable());
+    }
 
     private Pair<WebSocketSession, EventSource> createSession() throws Exception {
         WebSocketClient client = new StandardWebSocketClient();

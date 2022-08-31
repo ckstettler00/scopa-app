@@ -75,7 +75,7 @@ public class GameControlTest {
 
         // Player 1 uses last card.
         triggerEvent(control, new PlayResponseEvent(player1Id, new Pickup(new Card(1, Suit.CUPS),
-                new ArrayList<>(Arrays.asList(new Card(1, Suit.COINS))))));
+                new ArrayList<>(Arrays.asList(new Card(1, Suit.COINS)))), this.control.getGameId()));
 
         // Verify key counts and scores have not changed.
         assertThat(control.gameplay.deck.size()).isEqualTo(30);
@@ -88,7 +88,7 @@ public class GameControlTest {
 
         // Use player2 last card.
         triggerEvent(control, new PlayResponseEvent(player2Id, new Pickup(new Card(2, Suit.SWORDS),
-                new ArrayList<>(Arrays.asList(new Card(2, Suit.COINS))))));
+                new ArrayList<>(Arrays.asList(new Card(2, Suit.COINS)))), this.control.getGameId()));
 
         assertThat(control.currentState).isEqualTo(State.WAIT_4_PLAYER1_MOVE);
 
@@ -120,7 +120,7 @@ public class GameControlTest {
                 new Card(3, Suit.SWORDS), new Card(4, Suit.SWORDS)));
 
         // Playing a discard should not switch the lastTrick state.
-        triggerEvent(control, new PlayResponseEvent(player1Id, new Discard(new Card(10, Suit.CUPS))));
+        triggerEvent(control, new PlayResponseEvent(player1Id, new Discard(new Card(10, Suit.CUPS)), this.control.getGameId()));
         assertThat(this.control.lastTrickPlayer).isNull();
 
         // Confirming the move is player2 before proceeding.
@@ -128,7 +128,7 @@ public class GameControlTest {
 
         // Playing a pickup should switch the lastTrick indicator.
         triggerEvent(control, new PlayResponseEvent(player2Id, new Pickup(new Card(4, Suit.SWORDS),
-                Arrays.asList(new Card(4, Suit.COINS)))));
+                Arrays.asList(new Card(4, Suit.COINS))), this.control.getGameId()));
         // Check to see if the deck was updated in the status.
         assertThat(this.control.lastTrickPlayer.getDetails().getPlayerId()).isEqualTo(this.player2Id);
 
@@ -137,7 +137,7 @@ public class GameControlTest {
 
         // Playing a pickup should switch the lastTrick indicator.
         triggerEvent(control, new PlayResponseEvent(player1Id, new Pickup(new Card(3, Suit.CUPS),
-                Arrays.asList(new Card(3, Suit.COINS)))));
+                Arrays.asList(new Card(3, Suit.COINS))), this.control.getGameId()));
 
         assertThat(this.control.lastTrickPlayer.getDetails().getPlayerId()).isEqualTo(this.player1Id);
 
@@ -156,7 +156,7 @@ public class GameControlTest {
 
         // Player 1 is up but player2 is playing
         triggerEvent(control, new PlayResponseEvent(player2Id, new Pickup(new Card(1, Suit.SWORDS),
-                new ArrayList<>(Arrays.asList(new Card(1, Suit.COINS))))));
+                new ArrayList<>(Arrays.asList(new Card(1, Suit.COINS)))), this.control.getGameId()));
 
         // Player2 will receive error for playing out of turn.
         assertThat(player2.getEvents().get(0)).isInstanceOf(ErrorEvent.class);
@@ -168,14 +168,14 @@ public class GameControlTest {
 
         // Player 1 is up so play a card.
         triggerEvent(control, new PlayResponseEvent(player1Id, new Pickup(new Card(1, Suit.CUPS),
-                new ArrayList<>(Arrays.asList(new Card(1, Suit.COINS))))));
+                new ArrayList<>(Arrays.asList(new Card(1, Suit.COINS)))), this.control.getGameId()));
 
         // Should be player 2s turn
         assertThat(control.currentState).isEqualTo(State.WAIT_4_PLAYER2_MOVE);
 
         // Player 2 is up but let player1 try to play.
         triggerEvent(control, new PlayResponseEvent(player1Id, new Pickup(new Card(1, Suit.CUPS),
-                new ArrayList<>(Arrays.asList(new Card(1, Suit.COINS))))));
+                new ArrayList<>(Arrays.asList(new Card(1, Suit.COINS)))), this.control.getGameId()));
 
         // Player 1 will get an illegal play error.
         assertThat(player1.getEvents().get(0)).isInstanceOf(ErrorEvent.class);
@@ -187,7 +187,7 @@ public class GameControlTest {
 
         // Make a valid player 2 play
         triggerEvent(control, new PlayResponseEvent(player2Id, new Pickup(new Card(2, Suit.SWORDS),
-                new ArrayList<>(Arrays.asList(new Card(2, Suit.COINS))))));
+                new ArrayList<>(Arrays.asList(new Card(2, Suit.COINS)))), this.control.getGameId()));
 
         // Should be player 1s turn
         assertThat(control.currentState).isEqualTo(State.WAIT_4_PLAYER1_MOVE);
@@ -244,7 +244,7 @@ public class GameControlTest {
 
         triggerEvent(control, new PlayResponseEvent(player2Id, new Pickup(new Card(10, Suit.CUPS),
                 new ArrayList<>(Arrays.asList(new Card(1, Suit.COINS), new Card(2, Suit.COINS),
-                        new Card(3, Suit.COINS), new Card(4, Suit.COINS))))));
+                        new Card(3, Suit.COINS), new Card(4, Suit.COINS)))), this.control.getGameId()));
 
         assertThat(player2.getEvents().get(0)).isInstanceOf(ScopaEvent.class);
         assertThat(player2.getEvents().get(0).getEventType()).isEqualTo(EventType.SCOPA);
@@ -275,7 +275,7 @@ public class GameControlTest {
 
         triggerEvent(control, new PlayResponseEvent(player1Id, new Pickup(new Card(10, Suit.CUPS),
                 new ArrayList<>(Arrays.asList(new Card(1, Suit.COINS), new Card(2, Suit.COINS),
-                        new Card(3, Suit.COINS), new Card(4, Suit.COINS))))));
+                        new Card(3, Suit.COINS), new Card(4, Suit.COINS)))), this.control.getGameId()));
 
         assertThat(player1.getEvents().get(0)).isInstanceOf(ScopaEvent.class);
         assertThat(player1.getEvents().get(0).getEventType()).isEqualTo(EventType.SCOPA);
@@ -316,7 +316,7 @@ public class GameControlTest {
 
         // Play the card.
         this.control.handlePlayResponse(new PlayResponseEvent(player2Id, new Pickup(new Card(1, Suit.CUPS),
-                Arrays.asList(new Card(1, Suit.SWORDS)))));
+                Arrays.asList(new Card(1, Suit.SWORDS))), this.control.getGameId()));
 
         // There is some back ground threading that needs to happen
         // so cheat and sleep a little.
@@ -360,7 +360,7 @@ public class GameControlTest {
 
         // Play the card.
         this.control.handlePlayResponse(new PlayResponseEvent(player1Id, new Pickup(new Card(1, Suit.CUPS),
-                Arrays.asList(new Card(1, Suit.SWORDS)))));
+                Arrays.asList(new Card(1, Suit.SWORDS))), this.control.getGameId()));
 
         Thread.sleep(500);
         assertThat(this.player1.getEvents().get(0)).isInstanceOf(GameStatusEvent.class);
@@ -440,7 +440,7 @@ public class GameControlTest {
         player2.getEvents().clear();
 
         control.triggerEvent(new PlayResponseEvent(player1Id, new Pickup(new Card(4, Suit.CUPS),
-                Arrays.asList(new Card(1, Suit.COINS), new Card(3, Suit.COINS)))));
+                Arrays.asList(new Card(1, Suit.COINS), new Card(3, Suit.COINS))), this.control.getGameId()));
 
         Thread.sleep(500);
 
@@ -468,12 +468,12 @@ public class GameControlTest {
                 new Card(3, Suit.SWORDS), new Card(4, Suit.SWORDS)));
 
         triggerEvent(control, new PlayResponseEvent(player1Id, new Discard(new
-                Card(10, Suit.CUPS))));
+                Card(10, Suit.CUPS)), this.control.getGameId()));
 
         assertThat(this.control.currentState).isEqualTo(State.WAIT_4_PLAYER2_MOVE);
         assertThat(this.control.turnCounter).isEqualTo(1);
 
-        triggerEvent(control, new PlayResponseEvent(player2Id, new Discard(new Card(4, Suit.SWORDS))));
+        triggerEvent(control, new PlayResponseEvent(player2Id, new Discard(new Card(4, Suit.SWORDS)), this.control.getGameId()));
         // Check to see if the deck was updated in the status.
 
         ErrorEvent tmpe = (ErrorEvent) player2.getEvents().get(0);
@@ -496,7 +496,7 @@ public class GameControlTest {
                 new Card(3, Suit.SWORDS), new Card(4, Suit.SWORDS)));
 
         triggerEvent(control, new PlayResponseEvent(player1Id, new Pickup(new Card(4, Suit.CUPS),
-                Collections.singletonList(new Card(4, Suit.COINS)))));
+                Collections.singletonList(new Card(4, Suit.COINS))), this.control.getGameId()));
 
         // Check to see if the deck was updated in the status.
         GameStatusEvent tmpe = (GameStatusEvent) player1.getEvents().get(0);
@@ -512,7 +512,7 @@ public class GameControlTest {
         assertThat(control.roundCounter).isEqualTo(0);
 
         triggerEvent(control, new PlayResponseEvent(this.player2Id, new Pickup(new Card(3, Suit.SWORDS),
-                Arrays.asList(new Card(1, Suit.COINS), new Card(2, Suit.COINS)))));
+                Arrays.asList(new Card(1, Suit.COINS), new Card(2, Suit.COINS))), control.getGameId()));
 
         // Check to see if the deck was updated in the status.
         tmpe = (GameStatusEvent) player2.getEvents().get(0);
@@ -540,7 +540,7 @@ public class GameControlTest {
 
         triggerEvent(control, new PlayResponseEvent(player1Id, new Pickup(new Card(10, Suit.CUPS),
                 new ArrayList<>(Arrays.asList(new Card(1, Suit.COINS), new Card(2, Suit.COINS),
-                        new Card(3, Suit.COINS), new Card(4, Suit.COINS))))));
+                        new Card(3, Suit.COINS), new Card(4, Suit.COINS)))), this.control.getGameId()));
 
         assertThat(player1.getEvents().get(0).getEventType()).isEqualTo(EventType.SCOPA);
         assertThat(((ScopaEvent) player1.getEvents().get(0)).isFinalTrick()).isFalse();
@@ -565,13 +565,13 @@ public class GameControlTest {
                 new Card(3, Suit.SWORDS), new Card(4, Suit.SWORDS)));
 
         triggerEvent(control, new PlayResponseEvent(player1Id, new Pickup(new Card(1, Suit.CUPS),
-                new ArrayList<>(Arrays.asList(new Card(1, Suit.COINS))))));
+                new ArrayList<>(Arrays.asList(new Card(1, Suit.COINS)))), this.control.getGameId()));
 
         assertThat(control.currentState).isEqualTo(State.WAIT_4_PLAYER2_MOVE);
 
         triggerEvent(control, new PlayResponseEvent(player2Id, new Pickup(new Card(9, Suit.SWORDS),
                 new ArrayList<>(Arrays.asList(new Card(2, Suit.COINS),
-                        new Card(3, Suit.COINS), new Card(4, Suit.COINS))))));
+                        new Card(3, Suit.COINS), new Card(4, Suit.COINS)))), this.control.getGameId()));
 
         assertThat(player2.getEvents().get(0).getEventType()).isEqualTo(EventType.SCOPA);
         assertThat(((ScopaEvent) player2.getEvents().get(0)).isFinalTrick()).isFalse();
@@ -603,14 +603,14 @@ public class GameControlTest {
 
         // Play1 plays a pickup
         triggerEvent(control, new PlayResponseEvent(player1Id, new Pickup(new Card(7, Suit.CUPS),
-                Arrays.asList(new Card(7, Suit.COINS)))));
+                Arrays.asList(new Card(7, Suit.COINS))), this.control.getGameId()));
         assertThat(player1.getEvents().get(0)).isInstanceOf(GameStatusEvent.class);
 
         // Confirming the move is player2 before proceeding.
         assertThat(this.control.currentState).isEqualTo(State.WAIT_4_PLAYER2_MOVE);
 
         // Player2 playing a discard.
-        triggerEvent(control, new PlayResponseEvent(player2Id, new Discard(new Card(5, Suit.SWORDS))));
+        triggerEvent(control, new PlayResponseEvent(player2Id, new Discard(new Card(5, Suit.SWORDS)), this.control.getGameId()));
         assertThat(player2.getEvents().get(0)).isInstanceOf(GameStatusEvent.class);
 
         // The last 6 cards should  have been dealt.
@@ -627,35 +627,35 @@ public class GameControlTest {
         }
 
         // this should be a safe discard for player1
-        triggerEvent(control, new PlayResponseEvent(player1Id, new Discard(new Card(10, Suit.CUPS))));
+        triggerEvent(control, new PlayResponseEvent(player1Id, new Discard(new Card(10, Suit.CUPS)), this.control.getGameId()));
         assertThat(this.player1.getEvents().get(0)).isInstanceOf(GameStatusEvent.class);
         assertThat(this.control.currentState).isEqualTo(State.WAIT_4_PLAYER2_MOVE);
 
         // this should be a safe discard for player2
-        triggerEvent(control, new PlayResponseEvent(player2Id, new Discard(new Card(8, Suit.SWORDS))));
+        triggerEvent(control, new PlayResponseEvent(player2Id, new Discard(new Card(8, Suit.SWORDS)), this.control.getGameId()));
         assertThat(this.player2.getEvents().get(0)).isInstanceOf(GameStatusEvent.class);
         assertThat(this.control.currentState).isEqualTo(State.WAIT_4_PLAYER1_MOVE);
 
         // this should be another safe discard for player1
-        triggerEvent(control, new PlayResponseEvent(player1Id, new Discard(new Card(9, Suit.CUPS))));
+        triggerEvent(control, new PlayResponseEvent(player1Id, new Discard(new Card(9, Suit.CUPS)), this.control.getGameId()));
         assertThat(this.player1.getEvents().get(0)).isInstanceOf(GameStatusEvent.class);
         assertThat(this.control.currentState).isEqualTo(State.WAIT_4_PLAYER2_MOVE);
 
         // player 2 will pickup the 11 that player1 layed down.
         triggerEvent(control, new PlayResponseEvent(player2Id, new Pickup(new Card(9, Suit.SWORDS),
-                Arrays.asList(new Card(9, Suit.CUPS)))));
+                Arrays.asList(new Card(9, Suit.CUPS))), this.control.getGameId()));
         assertThat(this.control.currentState).isEqualTo(State.WAIT_4_PLAYER1_MOVE);
         assertThat(this.player2.getEvents().get(0)).isInstanceOf(GameStatusEvent.class);
 
         // Player1 should be able to pick up the 10 of sword layed down by player2
         triggerEvent(control, new PlayResponseEvent(player1Id, new Pickup(new Card(8, Suit.CUPS),
-                Arrays.asList(new Card(8, Suit.SWORDS)))));
+                Arrays.asList(new Card(8, Suit.SWORDS))), this.control.getGameId()));
         assertThat(this.player1.getEvents().get(0)).isInstanceOf(GameStatusEvent.class);
         assertThat(this.control.currentState).isEqualTo(State.WAIT_4_PLAYER2_MOVE);
 
         // player 2 should have a final safe discard
         triggerEvent(control, new PlayResponseEvent(player2Id, new Pickup(new Card(10, Suit.SWORDS),
-                Arrays.asList(new Card(10, Suit.CUPS)))));
+                Arrays.asList(new Card(10, Suit.CUPS))), this.control.getGameId()));
         assertThat(this.player2.getEvents().get(0)).isInstanceOf(GameStatusEvent.class);
     }
 
@@ -680,14 +680,14 @@ public class GameControlTest {
 
         // Play1 plays a pickup
         triggerEvent(control, new PlayResponseEvent(player1Id, new Pickup(new Card(7, Suit.CUPS),
-                Arrays.asList(new Card(7, Suit.COINS)))));
+                Arrays.asList(new Card(7, Suit.COINS))), this.control.getGameId()));
         assertThat(player1.getEvents().get(0)).isInstanceOf(GameStatusEvent.class);
 
         // Confirming the move is player2 before proceeding.
         assertThat(this.control.currentState).isEqualTo(State.WAIT_4_PLAYER2_MOVE);
 
         // Player2 playing a discard.
-        triggerEvent(control, new PlayResponseEvent(player2Id, new Discard(new Card(5, Suit.SWORDS))));
+        triggerEvent(control, new PlayResponseEvent(player2Id, new Discard(new Card(5, Suit.SWORDS)), this.control.getGameId()));
         assertThat(player2.getEvents().get(0)).isInstanceOf(GameStatusEvent.class);
 
         // The last 6 cards should  have been dealt.
@@ -708,35 +708,35 @@ public class GameControlTest {
         winner.setScore(11);
 
         // this should be a safe discard for player1
-        triggerEvent(control, new PlayResponseEvent(player1Id, new Discard(new Card(10, Suit.CUPS))));
+        triggerEvent(control, new PlayResponseEvent(player1Id, new Discard(new Card(10, Suit.CUPS)), this.control.getGameId()));
         assertThat(this.player1.getEvents().get(0)).isInstanceOf(GameStatusEvent.class);
         assertThat(this.control.currentState).isEqualTo(State.WAIT_4_PLAYER2_MOVE);
 
         // this should be a safe discard for player2
-        triggerEvent(control, new PlayResponseEvent(player2Id, new Discard(new Card(8, Suit.SWORDS))));
+        triggerEvent(control, new PlayResponseEvent(player2Id, new Discard(new Card(8, Suit.SWORDS)), this.control.getGameId()));
         assertThat(this.player2.getEvents().get(0)).isInstanceOf(GameStatusEvent.class);
         assertThat(this.control.currentState).isEqualTo(State.WAIT_4_PLAYER1_MOVE);
 
         // this should be another safe discard for player1
-        triggerEvent(control, new PlayResponseEvent(player1Id, new Discard(new Card(9, Suit.CUPS))));
+        triggerEvent(control, new PlayResponseEvent(player1Id, new Discard(new Card(9, Suit.CUPS)), this.control.getGameId()));
         assertThat(this.player1.getEvents().get(0)).isInstanceOf(GameStatusEvent.class);
         assertThat(this.control.currentState).isEqualTo(State.WAIT_4_PLAYER2_MOVE);
 
         // player 2 will pickup the 11 that player1 layed down.
         triggerEvent(control, new PlayResponseEvent(player2Id, new Pickup(new Card(9, Suit.SWORDS),
-                Arrays.asList(new Card(9, Suit.CUPS)))));
+                Arrays.asList(new Card(9, Suit.CUPS))), this.control.getGameId()));
         assertThat(this.control.currentState).isEqualTo(State.WAIT_4_PLAYER1_MOVE);
         assertThat(this.player2.getEvents().get(0)).isInstanceOf(GameStatusEvent.class);
 
         // Player1 should be able to pick up the 10 of sword layed down by player2
         triggerEvent(control, new PlayResponseEvent(player1Id, new Pickup(new Card(8, Suit.CUPS),
-                Arrays.asList(new Card(8, Suit.SWORDS)))));
+                Arrays.asList(new Card(8, Suit.SWORDS))), this.control.getGameId()));
         assertThat(this.player1.getEvents().get(0)).isInstanceOf(GameStatusEvent.class);
         assertThat(this.control.currentState).isEqualTo(State.WAIT_4_PLAYER2_MOVE);
 
         // player 2 should have a final safe discard
         triggerEvent(control, new PlayResponseEvent(player2Id, new Pickup(new Card(10, Suit.SWORDS),
-                Arrays.asList(new Card(10, Suit.CUPS)))));
+                Arrays.asList(new Card(10, Suit.CUPS))), this.control.getGameId()));
         assertThat(this.player1.getEvents().get(0)).isInstanceOf(GameStatusEvent.class);
         assertThat(this.player1.getEvents().get(1)).isInstanceOf(GameOverEvent.class);
         assertThat(this.player2.getEvents().get(0)).isInstanceOf(GameStatusEvent.class);

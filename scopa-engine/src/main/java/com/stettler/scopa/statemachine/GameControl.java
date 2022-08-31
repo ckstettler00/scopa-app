@@ -19,8 +19,6 @@ public class GameControl extends EventSource {
 
     State currentState;
 
-    Map<EventType, Consumer<GameEvent>> handlers = new ConcurrentHashMap<>();
-
     Map<String, EventSource> playerMap = new ConcurrentHashMap<>();
     List<Player> playerOrder = new ArrayList<>();
 
@@ -194,6 +192,10 @@ public class GameControl extends EventSource {
         logger.info("Play id:{} is now the current player.", player.getDetails().getPlayerId());
         this.currentPlayer = player;
         this.currentPlayerSource = source;
+    }
+
+    public Gameplay getGameplay() {
+        return gameplay;
     }
 
     protected Pair<Player, EventSource> lookupPlayer(String id) {

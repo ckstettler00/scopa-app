@@ -18,6 +18,11 @@ public class Gameplay {
         tmp.addAll(tableCards);
         return tmp;
     }
+    public void setTableCards(List<Card> cards) {
+        List<Card> tmp = new ArrayList<>();
+        tmp.addAll(cards);
+        this.tableCards = tmp;
+    }
 
     List<Card> tableCards = new ArrayList<>();
 

@@ -20,7 +20,16 @@ public class TestContext {
 
     private static TestContext context = new TestContext();
 
+    public void clear() {
+        players.clear();
+        sessions.clear();
+        eventSources.clear();
+        init();
+    }
     public TestContext() {
+        init();
+    }
+    private void init() {
         for (int i = 0; i < 2; i++){
             this.eventSources.add(null);
             this.players.add(null);

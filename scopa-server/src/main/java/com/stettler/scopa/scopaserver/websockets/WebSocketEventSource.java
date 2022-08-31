@@ -33,6 +33,7 @@ public class WebSocketEventSource extends EventSource {
         this.session = session;
         this.addHandler(EventType.NEWGAME, this::handleNewGameEvent);
         this.addHandler(EventType.REGISTER, this::handleRegistration);
+        this.addHandler(EventType.PLAY_RESP, this::handlePlayResponse);
         this.addHandler(EventType.GAMEOVER, this::sendToClient);
         this.addHandler(EventType.STATUS, this::sendToClient);
         this.addHandler(EventType.PLAY_REQ, this::sendToClient);
@@ -40,6 +41,19 @@ public class WebSocketEventSource extends EventSource {
         this.addHandler(EventType.ERROR, this::sendToClient);
     }
 
+    protected void handlePlayResponse(GameEvent event) {
+        logger.info("Playing a move {}", event);
+        GameControl game = registry.findGame(event.getGameId());
+        if (game == null) {
+            logger.error("play failed. game not found: {}", event);
+            throw new ScopaRuntimeException("failed to find game: "+event.getGameId());
+        }
+
+        logger.info("forwarding event to game controller: {} event:{}", game.getGameId(),
+                event);
+        game.triggerEvent(event);
+
+    }
     protected void handleNewGameEvent(GameEvent event) {
         logger.info("Registering new game event: {}", event);
         GameControl game = registry.newGame();
@@ -88,6 +102,7 @@ public class WebSocketEventSource extends EventSource {
         String msg = converter.convert(event, String.class);
         try {
             synchronized(this.session) {
+                logger.info("sendToClient: {}", event);
                 this.session.sendMessage(new TextMessage(msg));
             }
         } catch (IOException e) {

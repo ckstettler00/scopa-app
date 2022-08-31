@@ -24,6 +24,7 @@ public class StringToGameEvent implements Converter<String, GameEvent> {
         eventClass.put(EventType.PLAY_RESP.name(), PlayResponseEvent.class);
         eventClass.put(EventType.PLAY_REQ.name(), PlayRequestEvent.class);
         eventClass.put(EventType.REGISTER.name(), RegisterEvent.class);
+        eventClass.put(EventType.SCOPA.name(), ScopaEvent.class);
     }
 
     @Override

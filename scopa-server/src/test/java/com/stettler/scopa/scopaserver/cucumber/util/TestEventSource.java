@@ -15,13 +15,19 @@ public class TestEventSource extends EventSource {
     Logger logger = LoggerFactory.getLogger(getClass().getName());
     List<GameEvent> events = new ArrayList<>();
 
+    public void clearEvents() {
+        events.clear();
+    }
     public Optional<GameEvent> waitForEvent(EventType type, int timeout) {
         logger.info("source id:{} Waiting {} ms for event type: {}",this.getSourceId(), timeout, type);
         long start = System.currentTimeMillis();
         while (System.currentTimeMillis()-start < timeout) {
             logger.info("source id:{} wait loop events: {}", this.getSourceId(), events);
             Optional<GameEvent> ret = events.stream()
-                    .filter(e -> e.getEventType().equals(type)).findFirst();
+                    .filter(e -> {
+                        logger.info("{} == {} ? {}", e.getEventType(), type, e.getEventType().equals(type));
+                        return e.getEventType().equals(type);
+                    }).findFirst();
             logger.info("filter response {}", ret);
             if (ret.isPresent()) {
                 return ret;

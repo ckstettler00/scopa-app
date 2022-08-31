@@ -23,6 +23,8 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 public abstract class GameEvent {
     EventType eventType = EventType.NOOP;
 
+    private String gameId;
+
     @JsonIgnore
     private String fromSourceId;
 
@@ -62,8 +64,21 @@ public abstract class GameEvent {
         this.playerId = playerId;
         this.eventType = type;
     }
+    protected GameEvent(String playerId, EventType type, String gameId) {
+        this.playerId = playerId;
+        this.eventType = type;
+        this.gameId = gameId;
+    }
     public EventType getEventType() {
         return this.eventType;
+    }
+
+    public String getGameId() {
+        return gameId;
+    }
+
+    public void setGameId(String gameId) {
+        this.gameId = gameId;
     }
 
     @Override
