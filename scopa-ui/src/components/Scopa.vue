@@ -1,5 +1,4 @@
 <template>
-  <v-container style="padding: 5%">
     <v-card width="70%" style="padding: 1%">
       <v-item-group tag="player1-group">
         <v-row class="fill-height ma-0"
@@ -156,7 +155,6 @@
       </v-row>
       </v-item-group>
     </v-card>
-  </v-container>
 </template>
 
 <script>

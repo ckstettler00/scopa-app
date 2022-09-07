@@ -20,15 +20,14 @@
 
       <v-spacer></v-spacer>
     </v-app-bar>
-
     <v-main>
-      <Scopa/>
+        <Scopa/>
     </v-main>
   </v-app>
 </template>
 
 <script>
-import Scopa from './components/Scopa';
+import Scopa from './components/JoinGame';
 
 export default {
   name: 'App',
@@ -37,7 +36,8 @@ export default {
     Scopa,
   },
 
-  data: () => ({
+  data: () => (
+  {
     //
   }),
 };
