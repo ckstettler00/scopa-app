@@ -41,6 +41,32 @@ const actions = {
 }
 
 const mutations = {
+    ADD_EVENT_IN(state, event) {
+        console.info("add_event_in: " + JSON.stringify(event))
+        state.events_in.push(event)
+        state.events_in = ...state.events_in
+    },
+    APPEND_EVENT(state, event) {
+        console.info("append_event: "+JSON.stringify(event))
+        state.events_out.push(event)
+        state.events_out = ...state.events_out
+    }
+    SEND_EVENTS(state, ws) {
+
+        while (e = state.events_out.shift()) {
+            console.info("send_events: event: " + JSON.stringify(e))
+            if (e != null) {
+                console.info("send_event: " + JSON.stringify(e))
+                var msg = {
+                    messageType : e.eventType,
+                    payload : JSON.stringify(e)
+                  }
+                console.info("send_event: " + JSON.stringify(msg))
+                ws.send(m)
+            }
+        }
+        state.events_out = ...state.events_out
+    },
     SET_GAMELIST(state, list) {
           console.info("SET_GAMELIST: "+ JSON.stringify(list))
           var games  = []

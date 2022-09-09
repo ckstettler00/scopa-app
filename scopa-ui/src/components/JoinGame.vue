@@ -104,6 +104,19 @@
       label: "New Game",
   }
 
+  const NewGameEvent = {
+    @type : "NewGameEvent",
+    eventType : "NEWGAME",
+    gameId : null,
+    playerId : "all",
+    details : {
+        screenHandle : "natename",
+        emailAddr : "nate@gmail.com",
+        playerToken : "token",
+        playerSecret : "secret"
+    }
+,
+
   export default {
       data () {
         return {
@@ -173,6 +186,13 @@
           this.screenHandle + " " +
           this.emailAddr + " " +
           this.secret)
+          var event = NewGameEvent
+          event.details.screenHandle = this.screenHandle
+          event.details.emailAddr = this.emailAddr
+
+          console.info("Adding event: "+JSON.stringify(event))
+          this.$store.dispatch("APPEND_EVENT", event)
+
           this.waitForStart = true
       },
       openDialog (item) {
