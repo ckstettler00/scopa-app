@@ -36,8 +36,7 @@ export default {
     Scopa,
   },
 
-  data: () => (
-  {
+  data: () => ({
     //
   }),
 };

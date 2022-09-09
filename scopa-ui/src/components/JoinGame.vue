@@ -8,12 +8,12 @@
 
     <v-data-table
       :headers="headerArray"
-      :items="games"
+      :items="getGameList"
       item-key="gameId"
       class="elevation-1"
     >
 
-    <template v-slot:item.actions="{ item }">
+    <template v-slot:[`item.actions`]="{ item }">
           <v-btn color="primary"
           @click="openDialog(item)"
            v-if="isGameAvailable(item)">
@@ -96,17 +96,8 @@
 </template>
 
 <script>
-  import axios from 'axios'
-  var games2 = [
-     {
-            gameId: null,
-            owner: null,
-            opponent: null,
-            gameState: null,
-            label: 'New Game',
-
-     },
-  ]
+  import { mapGetters, mapActions } from 'vuex';
+  import store from '../store/index';
 
 
   export default {
@@ -137,50 +128,28 @@
           ],
         }
       },
-    mounted() {
-        console.info("On mounted called.")
-        this.games = [{
-                    gameId: null,
-                    owner: null,
-                    opponent: null,
-                    gameState: null,
-                    label: 'New Game',},]
-        axios
-        .get('http://localhost:8090/scopa/gamelist')
-        .then((response) => {
-          console.info("data:"+JSON.stringify(response.data))
-
-          for (var i = 0; i < response.data.length; i++) {
-              this.games.push({})
-              this.games[i+1].gameId = response.data[i].gameId
-              this.games[i+1].gameState = response.data[i].gameState
-              this.games[i+1].label = "Create New"
-              if (response.data[i].playerList.length > 0) {
-                  this.games[i+1].owner = response.data[i].playerList[0]
-                  this.games[i+1].label = "Join"
-              }
-              if (response.data[i].playerList.length > 1) {
-                  this.games[i+1].opponent = response.data[i].playerList[1]
-                  this.games[i+1].label = null
-              }
-          }
-        })
-        .catch(error => {
-          console.log(error)
-          this.errored = true
-        })
-        .finally(() => this.loading = false)
-    },
-
-
 
     computed: {
+        ...mapGetters(['getGameList'])
+    },
+
+    created() {
+        store.dispatch('fetchGameList')
+            .then(() => {
+        console.info("store:"+JSON.stringify(this.$store.getters))
+                this.loading = false
+              })
+
     },
 
     watch: {
     },
 
     methods: {
+      ...mapActions(['fetchGameList']),
+
+
+
       isGameAvailable(item) {
           return item.opponent == null
       },
