@@ -8,7 +8,7 @@
 
     <v-data-table
       :headers="headerArray"
-      :items="getGameList"
+      :items="games"
       item-key="gameId"
       class="elevation-1"
     >
@@ -16,7 +16,7 @@
     <template v-slot:[`item.actions`]="{ item }">
           <v-btn color="primary"
           @click="openDialog(item)"
-           v-if="isGameAvailable(item)">
+           v-if="item.canJoin">
             {{item.label}}
           </v-btn>
     </template>
@@ -99,6 +99,10 @@
   import { mapGetters, mapActions } from 'vuex';
   import store from '../store/index';
 
+  const NEWGAME_ENTRY = {
+      canJoin: true,
+      label: "New Game",
+  }
 
   export default {
       data () {
@@ -143,6 +147,17 @@
     },
 
     watch: {
+        getGameList : function() {
+            var tmpList = [NEWGAME_ENTRY]
+            this.getGameList.forEach( (g) => {
+                var t = g
+                if (t.canJoin) {
+                    t.label = "Join"
+                }
+                tmpList.push(t)
+            })
+            this.games = tmpList
+        },
     },
 
     methods: {

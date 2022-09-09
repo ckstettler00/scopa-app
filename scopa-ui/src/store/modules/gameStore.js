@@ -49,12 +49,14 @@ const mutations = {
               games[i].gameId = list[i].gameId
               games[i].gameState = list[i].gameState
               games[i].canJoin = false
-              if (list[i].playerList.length > 0) {
+              if (list[i].playerList.length > 1) {
                   games[i].owner = list[i].playerList[0]
-                  games[i].canJoin = true
               }
               if (list[i].playerList.length > 1) {
                   games[i].opponent = list[i].playerList[1]
+              }
+              if (list[i].playerList.length == 1) {
+                  games[i].canJoin = true
               }
           }
           state.gamelist = games
