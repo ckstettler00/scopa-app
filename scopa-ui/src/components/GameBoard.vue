@@ -159,7 +159,7 @@
 
 <script>
 export default {
-  name: 'Scopa',
+  name: 'GameBoard',
 
   data: () => ({
     maxWidth: 90,

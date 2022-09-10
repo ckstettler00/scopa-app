@@ -187,6 +187,7 @@
             this.waitForStart = false
             this.dialog = false
             this.$store.dispatch('fetchGameList')
+            this.$router.push("/play")
         }
     },
 

@@ -21,19 +21,18 @@
       <v-spacer></v-spacer>
     </v-app-bar>
     <v-main>
-        <Scopa/>
+         <router-view></router-view>
     </v-main>
   </v-app>
 </template>
 
 <script>
-import Scopa from './components/JoinGame';
 
 export default {
   name: 'App',
 
-  components: {
-    Scopa,
+  created() {
+      this.$router.push("/join")
   },
 
   data: () => ({
