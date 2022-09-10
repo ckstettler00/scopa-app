@@ -3,6 +3,8 @@ import App from './App.vue'
 import vuetify from './plugins/vuetify'
 import store from './store/index'
 import axios from 'axios'
+import { mapGetters } from 'vuex';
+
 
 Vue.config.productionTip = false
 
@@ -13,16 +15,17 @@ const app = new Vue({
   store,
   render: h => h(App),
   mounted: function(){
-        connection.onmessage = (event) => {
-          this.$store.dispatch('add_event_in', event.data);
+        ws.onmessage = (event) => {
+          this.$store.dispatch('addEventIn', JSON.parse(event.data));
          }
+  },
+  computed: {
+    ...mapGetters(['getEventsOut'])
   },
   watch: {
       getEventsOut: function() {
-         this.getEventsOut.forEach((e) => {
              console.info("send all events to server")
-             this.$store.dispatch('send_events', ws)
-         })
+             this.$store.dispatch('sendEvents', ws)
       }
   }
 }).$mount('#app')

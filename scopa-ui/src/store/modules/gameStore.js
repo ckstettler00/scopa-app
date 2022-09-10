@@ -35,37 +35,59 @@ const actions = {
         })
     },
 
-//    fetchGameStatus(context,  gameId) {
-//
-//    }
-}
-
-const mutations = {
-    ADD_EVENT_IN(state, event) {
-        console.info("add_event_in: " + JSON.stringify(event))
-        state.events_in.push(event)
-        state.events_in = ...state.events_in
-    },
-    APPEND_EVENT(state, event) {
-        console.info("append_event: "+JSON.stringify(event))
-        state.events_out.push(event)
-        state.events_out = ...state.events_out
-    }
-    SEND_EVENTS(state, ws) {
-
-        while (e = state.events_out.shift()) {
-            console.info("send_events: event: " + JSON.stringify(e))
+    sendEvents(context, ws) {
+        var list = [...state.events_out]
+        var e = list.shift()
+        while (e != null) {
+            console.info("sendEvents: event: " + JSON.stringify(e))
             if (e != null) {
-                console.info("send_event: " + JSON.stringify(e))
+                console.info("sendEvents: " + JSON.stringify(e))
                 var msg = {
                     messageType : e.eventType,
                     payload : JSON.stringify(e)
                   }
-                console.info("send_event: " + JSON.stringify(msg))
-                ws.send(m)
+                console.info("sentEvents: " + JSON.stringify(msg))
+                ws.send(JSON.stringify(msg))
             }
+            e = list.shift()
         }
-        state.events_out = ...state.events_out
+        if (list.length > 0) {
+            context.commit("CLEAR_EVENTS")
+        }
+    },
+    addEventOut(context, event) {
+        console.info("addEventOut:"+JSON.stringify(event))
+        context.commit("ADD_EVENT_OUT", event)
+    },
+    addEventIn(context, event) {
+        console.info("addEventIn:"+JSON.stringify(event))
+        context.commit("ADD_EVENT_IN", event)
+        var e = JSON.parse(event.payload)
+        if (e.eventType == "STATUS") {
+            console.info("addEventIn detected status "+JSON.stringify(e))
+            context.commit("SET_LAST_STATUS", e)
+        }
+    }
+}
+
+const mutations = {
+    ADD_EVENT_IN(state, event) {
+        console.info("ADD_EVENT_IN: " + JSON.stringify(event))
+        state.events_in.push(event)
+        state.events_in = [...state.events_in]
+    },
+    ADD_EVENT_OUT(state, event) {
+        console.info("ADD_EVENT_OUT: "+JSON.stringify(event))
+        state.events_out.push(event)
+        state.events_out = [...state.events_out]
+        console.info("ADD_EVENT_OUT:" + JSON.stringify(state.events_out))
+    },
+    SET_LAST_STATUS(state, status) {
+        state.lastStatus = status
+    },
+    CLEAR_EVENTS(state) {
+        console.info("clear_events")
+        state.events_out = []
     },
     SET_GAMELIST(state, list) {
           console.info("SET_GAMELIST: "+ JSON.stringify(list))
@@ -75,7 +97,7 @@ const mutations = {
               games[i].gameId = list[i].gameId
               games[i].gameState = list[i].gameState
               games[i].canJoin = false
-              if (list[i].playerList.length > 1) {
+              if (list[i].playerList.length >= 1) {
                   games[i].owner = list[i].playerList[0]
               }
               if (list[i].playerList.length > 1) {
@@ -85,8 +107,8 @@ const mutations = {
                   games[i].canJoin = true
               }
           }
-          state.gamelist = games
-          console.debug("gameStore.set_gamelist " + JSON.stringify(state.gamelist))
+          state.gamelist = [...games]
+          console.info("gameStore.set_gamelist " + JSON.stringify(state.gamelist))
     },
 }
 

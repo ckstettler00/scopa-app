@@ -97,7 +97,6 @@
 
 <script>
   import { mapGetters, mapActions } from 'vuex';
-  import store from '../store/index';
 
   const NEWGAME_ENTRY = {
       canJoin: true,
@@ -105,23 +104,36 @@
   }
 
   const NewGameEvent = {
-    @type : "NewGameEvent",
+    "@type" : "NewGameEvent",
     eventType : "NEWGAME",
     gameId : null,
     playerId : "all",
     details : {
-        screenHandle : "natename",
-        emailAddr : "nate@gmail.com",
-        playerToken : "token",
-        playerSecret : "secret"
+        screenHandle : null,
+        emailAddr : null,
+        playerToken : null,
+        playerSecret : null
     }
-,
+  }
+
+  const JoinGameEvent ={
+      "@type" : "RegisterEvent",
+      eventType : "REGISTER",
+      details : {
+          screenHandle : null,
+          emailAddr : null,
+          playerToken : null,
+          playerSecret : null
+      },
+      "gameId" : null
+  }
 
   export default {
       data () {
         return {
           games: [],
           errored: false,
+          currentGameId: null,
           loading: true,
           waitForStart: false,
           secret: null,
@@ -147,16 +159,15 @@
       },
 
     computed: {
-        ...mapGetters(['getGameList'])
+        ...mapGetters(['getGameList','getLastStatus'])
     },
 
     created() {
-        store.dispatch('fetchGameList')
+        this.$store.dispatch('fetchGameList')
             .then(() => {
         console.info("store:"+JSON.stringify(this.$store.getters))
                 this.loading = false
               })
-
     },
 
     watch: {
@@ -171,27 +182,34 @@
             })
             this.games = tmpList
         },
+        getLastStatus : function() {
+            console.info("getLastStatus changed: " + JSON.stringify(this.getLastStatus))
+            this.waitForStart = false
+            this.dialog = false
+            this.$store.dispatch('fetchGameList')
+        }
     },
 
     methods: {
       ...mapActions(['fetchGameList']),
 
-
-
-      isGameAvailable(item) {
-          return item.opponent == null
-      },
       startOrJoin() {
-          console.info("Join Game: " +
+          console.info(this.dialogLabel + " Game: " +
           this.screenHandle + " " +
           this.emailAddr + " " +
           this.secret)
+
           var event = NewGameEvent
+          if (this.dialogLabel == "Join") {
+              event = JoinGameEvent
+              event.gameId = this.currentGameId
+          }
+
           event.details.screenHandle = this.screenHandle
           event.details.emailAddr = this.emailAddr
 
           console.info("Adding event: "+JSON.stringify(event))
-          this.$store.dispatch("APPEND_EVENT", event)
+          this.$store.dispatch("addEventOut", event)
 
           this.waitForStart = true
       },
@@ -199,6 +217,7 @@
           this.screenHandle=""
           this.emailAddr=""
           this.secret=""
+          this.currentGameId = item.gameId
           this.dialog = true
           this.dialogLabel = item.label
       },
