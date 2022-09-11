@@ -14,7 +14,7 @@ public class ServerWebSocketConfig implements WebSocketConfigurer {
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(webSocketHandler(), "/scopaevents");
+        registry.addHandler(webSocketHandler(), "/scopaevents").setAllowedOrigins("*");
     }
 
     @Bean

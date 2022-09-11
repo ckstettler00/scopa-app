@@ -13,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class StringToGameEvent implements Converter<String, GameEvent> {
-    private ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper = new ObjectMapper();
     Map<String, Class<?>> eventClass = new ConcurrentHashMap<>();
 
     public StringToGameEvent() {
@@ -32,7 +32,7 @@ public class StringToGameEvent implements Converter<String, GameEvent> {
 
         try {
             ScopaMessage msg = mapper.readValue(payload, ScopaMessage.class);
-            Class<GameEvent> clazz = (Class<GameEvent>)eventClass.get(msg.getMessageType());
+            Class<GameEvent> clazz = (Class<GameEvent>) eventClass.get(msg.getMessageType());
             if (clazz == null) {
                 throw new ScopaRuntimeException("No event for eventType found");
             }
