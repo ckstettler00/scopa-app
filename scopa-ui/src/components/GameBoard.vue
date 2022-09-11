@@ -1,13 +1,13 @@
 <template>
     <v-card width="70%" style="padding: 1%">
-      <v-item-group tag="player1-group">
+      <v-item-group tag="opponent-group">
         <v-row class="fill-height ma-0"
                align="center"
                justify="center"
                style="padding: 1%"
                width="100%">
           <v-card style="padding: 1%">
-            <v-text-field label="Player1 Name" outlined value="Player1" clearable/>
+            <v-text-field label="Opponent" outlined :value="opponentName" clearable/>
             <v-text-field label="Score" outlined value="0" disabled/>
           </v-card>
           <v-spacer max-width="10%"/>
@@ -113,7 +113,7 @@
           <v-spacer width="20%"/>
         </v-row>
       </v-item-group>
-      <v-item-group tag="player2-group">
+      <v-item-group tag="player-group">
       <v-row class="fill-height ma-0"
              align="center"
              justify="center"
@@ -121,7 +121,7 @@
              width="100%"
       >
         <v-card style="padding: 1%">
-          <v-text-field label="Player2 Name" outlined value="Player2" clearable/>
+          <v-text-field label="You" outlined :value="playerName" clearable/>
           <v-text-field label="Score" outlined value="0" disabled/>
         </v-card>
         <v-spacer max-width="10%"/>
@@ -224,6 +224,8 @@ export default {
             this.gameId = this.getLastStatus.status.gameId
             this.myhand = this.getLastStatus.status.playerHand
             this.tableCards = this.getLastStatus.status.table
+            this.opponentName = 'TBD'
+            this.playerName = this.getLastStatus.status.playerDetails.screenHandle
 
       },
       opponentCard: function(idx) {
@@ -265,6 +267,8 @@ export default {
 
   data: () => ({
         numCardsInOpponentsHand: 0,
+        playerName: 'unknown',
+        opponentName: 'unknown',
         cardsLeft: 0,
         gameId: null,
         myhand: [],
