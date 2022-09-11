@@ -6,6 +6,7 @@
     <v-card-text>Join a game in progress or start a new game.
     </v-card-text>
 
+
     <v-data-table
       :headers="headerArray"
       :items="games"
