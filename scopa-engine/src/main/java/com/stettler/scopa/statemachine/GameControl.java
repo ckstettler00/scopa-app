@@ -39,15 +39,19 @@ public class GameControl extends EventSource {
         status.setCardsRemaining(this.gameplay.getDeck().size());
         status.setPlayerHand(player.getHand());
         status.setCurrentGameState(this.currentState.name());
+        status.setPlayerScore(player.getScore());
 
         // If hands have been dealt then set the opponentCardCount
         if (this.playerOrder.size() >1 && this.currentPlayer!=null) {
             if (this.playerOrder.get(0).getDetails().getPlayerId().
                     equals(player.getDetails().getPlayerId())) {
                 status.setOpponentCardCount(this.playerOrder.get(1).getHand().size());
+                status.setOpponentDetails(this.playerOrder.get(1).getDetails());
+                status.setOpponentScore(this.playerOrder.get(1).getScore());
             } else {
                 status.setOpponentCardCount(this.playerOrder.get(0).getHand().size());
-            }
+                status.setOpponentDetails(this.playerOrder.get(0).getDetails());
+                status.setOpponentScore(this.playerOrder.get(0).getScore());           }
         }
         if (this.currentPlayer != null) {
             status.setCurrentPlayerId(currentPlayer.getDetails().getPlayerId());

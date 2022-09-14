@@ -17,6 +17,12 @@ public class GameStatus {
 
     private int opponentCardCount;
 
+    private PlayerDetails opponentDetails;
+
+    private int opponentScore;
+
+    private int playerScore;
+
     private Integer cardsRemaining;
 
     public GameStatus() {
@@ -84,6 +90,30 @@ public class GameStatus {
 
     public void setCurrentGameState(String currentGameState) {
         this.currentGameState = currentGameState;
+    }
+
+    public PlayerDetails getOpponentDetails() {
+        return opponentDetails;
+    }
+
+    public void setOpponentDetails(PlayerDetails opponentDetails) {
+        this.opponentDetails = opponentDetails;
+    }
+
+    public int getOpponentScore() {
+        return opponentScore;
+    }
+
+    public void setOpponentScore(int opponentScore) {
+        this.opponentScore = opponentScore;
+    }
+
+    public int getPlayerScore() {
+        return playerScore;
+    }
+
+    public void setPlayerScore(int playerScore) {
+        this.playerScore = playerScore;
     }
 
     @Override

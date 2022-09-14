@@ -1,116 +1,160 @@
 <template>
-<v-container>
-  <v-layout class="pa-3" row>
-    <v-flex class="pa-2" md3>
-        <v-card class="pa-2">
+    <v-card width="70%" style="padding: 1%">
+      <v-item-group tag="opponent-group">
+        <v-row class="fill-height ma-0"
+               align="center"
+               justify="center"
+               style="padding: 1%"
+               width="100%">
+          <v-card style="padding: 1%">
             <v-text-field label="Opponent" outlined :value="opponentName" clearable/>
             <v-text-field label="Score" outlined :value="opponentScore" disabled/>
-        </v-card>
-    </v-flex>
-    <v-flex md3>
-    </v-flex>
-    <v-flex md3>
-        <v-item-group tag="opponent-group" width="100%">
-        <v-layout>
-            <v-flex class="pa-2" md4  v-for="n in 3" :key="n">
-            <v-item  v-slot="{active, toggle}">
-                <v-card  class="pa-2"
+          </v-card>
+          <v-spacer max-width="10%"/>
+          <v-item v-for="n in 3" :key="n" v-slot="{active, toggle}">
+            <v-card :key="n" width="15%" style="padding: 1%"
                     @click="toggle"
-                    :color="active?'primary':''"
-                    outlined
-                    shaped
-                    tile>
-                    <v-img
-                      :src="opponentCard(n)"
-                      class="grey lighten-2 pa-2"
-                    >
-                    </v-img>
-                </v-card>
-                </v-item>
-            </v-flex>
-            </v-layout>
-        </v-item-group>
-    </v-flex>
-    <v-flex md1></v-flex>
-  </v-layout>
-  <v-layout class="pa-2">
-    <v-divider></v-divider>
-  </v-layout>
-  <v-layout class="pa-3" row>
-    <v-flex class="pa-2" md1>
-        <v-card >
-            <v-card class="pa-2">
+                    :color="active?'primary':''">
               <v-img
-                  src="@/assets/scopa.jpg"
+                  :src="opponentCard(n)"
+                  :lazy-src="opponentCard(n)"
+                  aspect-ratio="16/9"
+                  width="100%"
                   class="grey lighten-2"
+                  style="padding: 1%"
               >
+                <template v-slot:placeholder>
+                  <v-row
+                      class="fill-height ma-0"
+                      align="center"
+                      justify="center"
+                  >
+                    <v-progress-circular
+                        indeterminate
+                        color="grey lighten-5"
+                    ></v-progress-circular>
+                  </v-row>
+                </template>
               </v-img>
             </v-card>
-            <v-divider class="pa-2"/>
-            <v-text-field class="pa-2" dense outlined label="Cards" :value="cardsLeft"/>
-        </v-card>
-    </v-flex>
-    <v-flex md4>
-    </v-flex>
-    <v-flex class="pa-2" md6>
-      <v-item-group tag="table" multiple>
-          <v-card colspan="5">
-            <v-layout v-for="r in 2" :key="r">
-              <v-flex class="pa-2" md2 v-for="c in 6" :key="c">
-                  <v-item  v-slot="{active, toggle}">
-                      <v-card class="pa-2"
-                         :color="active ? 'primary' : ''"
-                          @click="toggle">
-                          <v-img
-                              :src="tableCard((r-1)*5+c)"
-                              class="grey lighten-2">
-                          </v-img>
-                      </v-card>
-                  </v-item>
-              </v-flex>
-            </v-layout>
-        </v-card>
-        </v-item-group>
-    </v-flex>
-  </v-layout>
-  <v-layout class="pa-2">
-    <v-divider></v-divider>
-  </v-layout>
-  <v-layout row class="pa-3">
-    <v-flex class="pa-2" md3>
-        <v-card class="pa-2">
+          </v-item>
+          <v-spacer width="35%"/>
+        </v-row>
+      </v-item-group>
+      <v-item-group tag="table-group" multiple>
+        <v-row class="fill-height ma-0"
+               align="center"
+               justify="center"
+               style="padding: 1%"
+               width="100%"
+        >
+          <v-card width="15%" style="padding: 1%" elevation="20">
+            <v-card style="padding: 1%">
+              <v-img
+                  src="@/assets/scopa.jpg"
+                  lazy-src="@/assets/scopa.jpg"
+                  aspect-ratio="16/9"
+                  width="100%"
+                  class="grey lighten-2"
+                  style="padding: 1%"
+              >
+                <template v-slot:placeholder>
+                  <v-row
+                      class="fill-height ma-0"
+                      align="center"
+                      justify="center"
+                  >
+                    <v-progress-circular
+                        indeterminate
+                        color="grey lighten-5"
+                    ></v-progress-circular>
+                  </v-row>
+                </template>
+              </v-img>
+            </v-card>
+            <v-divider style="padding: 5%"/>
+            <v-text-field style="padding: 5%" dense outlined label="Cards" :value="cardsLeft"/>
+          </v-card>
+          <v-spacer width="10%"/>
+          <v-card width="60%" elevation="10" style="padding: 2%">
+            <v-row v-for="r in 2"
+                   :key="r"
+                   width="100%" style="padding:1%">
+              <v-item v-for="i in 5"
+                      :key="i"
+                      v-slot="{active, toggle}">
+                <v-card width="20%"
+                :color="active ? 'primary' : ''"
+                        style="padding: 2%"
+                @click="toggle">
+              <v-img
+                  :src="tableCard((r-1)*5+i)"
+                  :lazy-src="tableCard((r-1)*5+i)"
+                  aspect-ratio="16/9"
+                  width="100%"
+                  class="grey lighten-2">
+                <template v-slot:placeholder>
+                  <v-row
+                      class="fill-height ma-0"
+                      align="center"
+                      justify="center"
+                  >
+                    <v-progress-circular
+                        indeterminate
+                        color="grey lighten-5"
+                    ></v-progress-circular>
+                  </v-row>
+                </template>
+              </v-img>
+                </v-card>
+              </v-item>
+            </v-row>
+          </v-card>
+          <v-spacer width="20%"/>
+        </v-row>
+      </v-item-group>
+      <v-item-group tag="player-group">
+      <v-row class="fill-height ma-0"
+             align="center"
+             justify="center"
+             style="padding: 1%"
+             width="100%"
+      >
+        <v-card style="padding: 1%">
           <v-text-field label="You" outlined :value="playerName" clearable/>
           <v-text-field label="Score" outlined :value="playerScore" disabled/>
         </v-card>
-    </v-flex>
-    <v-flex md3>
-    </v-flex>
-    <v-flex md3>
-        <v-item-group tag="player-group" width="100%">
-        <v-layout>
-            <v-flex class="pa-2" md4  v-for="n in 3" :key="n">
-            <v-item  v-slot="{active, toggle}">
-                <v-card  class="pa-2"
-                    @click="toggle"
-                    :color="active?'primary':''"
-                    outlined
-                    shaped
-                    tile>
-                    <v-img
-                      :src="playerCard(n)"
-                      class="grey lighten-2"
-                    >
-                    </v-img>
-                </v-card>
-                </v-item>
-            </v-flex>
-            </v-layout>
-        </v-item-group>
-    </v-flex>
-
-    <v-flex md1></v-flex>
-  </v-layout>
-</v-container>
+        <v-spacer max-width="10%"/>
+        <v-item v-for="n in 3" :key="n" v-slot="{active,toggle}">
+        <v-card width="15%" style="padding: 1%"
+        @click="toggle"
+        :color="active?'primary':''">
+          <v-img
+              :src="playerCard(n)"
+              :lazy-src="playerCard(n)"
+              aspect-ratio="16/9"
+              width="100%"
+              class="grey lighten-2"
+          >
+            <template v-slot:placeholder>
+              <v-row
+                  class="fill-height ma-0"
+                  align="center"
+                  justify="center"
+              >
+                <v-progress-circular
+                    indeterminate
+                    color="grey lighten-5"
+                ></v-progress-circular>
+              </v-row>
+            </template>
+          </v-img>
+        </v-card>
+        </v-item>
+        <v-spacer width="35%"/>
+      </v-row>
+      </v-item-group>
+    </v-card>
 </template>
 
 <script>
@@ -180,10 +224,8 @@ export default {
             this.gameId = this.getLastStatus.status.gameId
             this.myhand = this.getLastStatus.status.playerHand
             this.tableCards = this.getLastStatus.status.table
-            this.opponentName = this.getLastStatus.status.opponentDetails.screenHandle
-            this.opponentScore = this.getLastStatus.status.opponentScore
+            this.opponentName = 'TBD'
             this.playerName = this.getLastStatus.status.playerDetails.screenHandle
-            this.playerScore = this.getLastStatus.status.playerScore
 
       },
       opponentCard: function(idx) {
