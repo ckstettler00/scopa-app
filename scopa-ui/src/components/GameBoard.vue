@@ -12,8 +12,8 @@
     <v-flex md3>
         <v-item-group tag="opponent-group" width="100%">
         <v-layout>
-            <v-flex class="pa-2" md4  v-for="n in 3" :key="n">
-            <v-item  v-slot="{active, toggle}">
+            <v-flex class="pa-2" md3  v-for="n in 3" :key="n">
+            <v-item  v-slot="{active, toggle}" enabled="false">
                 <v-card  class="pa-2"
                     @click="toggle"
                     :color="active?'primary':''"
@@ -54,15 +54,17 @@
     </v-flex>
     <v-flex class="pa-2" md6>
       <v-item-group tag="table" multiple>
-          <v-card colspan="5">
+          <v-card >
             <v-layout v-for="r in 2" :key="r">
-              <v-flex class="pa-2" md2 v-for="c in 6" :key="c">
+              <v-flex  class="pa-2" md2 v-for="c in 6" :key="c">
                   <v-item  v-slot="{active, toggle}">
                       <v-card class="pa-2"
                          :color="active ? 'primary' : ''"
-                          @click="toggle">
-                          <v-img
-                              :src="tableCard((r-1)*5+c)"
+
+                          @click="toggle"
+                          v-on:click="toggleTableCards((r-1)*6+c)"
+                    :disabled="!isCardVisible(tableCards,(r-1)*6+c)">
+                          <v-img :src="tableCard((r-1)*6+c)"
                               class="grey lighten-2">
                           </v-img>
                       </v-card>
@@ -88,14 +90,17 @@
     <v-flex md3>
         <v-item-group tag="player-group" width="100%">
         <v-layout>
-            <v-flex class="pa-2" md4  v-for="n in 3" :key="n">
+            <v-flex  lass="pa-2" md3  v-for="n in 3" :key="n">
             <v-item  v-slot="{active, toggle}">
                 <v-card  class="pa-2"
                     @click="toggle"
+                    v-on:click = "toggleHandCards(n)"
                     :color="active?'primary':''"
                     outlined
                     shaped
-                    tile>
+                    tile
+                    :disabled="!isCardVisible(myhand, n)"
+                    >
                     <v-img
                       :src="playerCard(n)"
                       class="grey lighten-2"
@@ -178,8 +183,24 @@ export default {
             this.numCardsInOpponentsHand = this.getLastStatus.status.opponentCardCount
             this.cardsLeft = this.getLastStatus.status.cardsRemaining
             this.gameId = this.getLastStatus.status.gameId
-            this.myhand = this.getLastStatus.status.playerHand
-            this.tableCards = this.getLastStatus.status.table
+
+            console.info("playerHand:"+JSON.stringify(this.myhand))
+            var hand = []
+            this.getLastStatus.status.playerHand.forEach(function(c) {
+                console.info("playerHand card:"+JSON.stringify(c))
+                hand.push({card: c, active: false})
+            })
+            this.myhand = hand
+
+            console.info("playerHand: "+JSON.stringify(this.myhand))
+
+            hand = []
+            this.getLastStatus.status.table.forEach(function(c) {
+                hand.push({card: c, active: false})
+            })
+            this.tableCards = hand
+            console.info("tableHand: "+JSON.stringify(this.tableCards))
+
             this.opponentName = this.getLastStatus.status.opponentDetails.screenHandle
             this.opponentScore = this.getLastStatus.status.opponentScore
             this.playerName = this.getLastStatus.status.playerDetails.screenHandle
@@ -209,14 +230,27 @@ export default {
           console.log("createAssetName: idx:"+idx+" list:"+JSON.stringify(list))
           var file = "empty"
           if (idx <= list.length) {
-              file = list[idx-1].val + "-" + list[idx-1].suit.toLowerCase()
+              file = list[idx-1].card.val + "-" + list[idx-1].card.suit.toLowerCase()
           }
 
           console.log('createAssetName:['+cardfaces[file]+']')
 
           return cardfaces[file]
-      }
-
+      },
+      toggleHandCards(idx) {
+          console.info("toggleHandCards: idx:"+idx)
+          this.myhand[idx-1].active = !this.myhand[idx-1].active
+          console.info("toggleHandCards: "+JSON.stringify(this.myhand))
+      },
+      toggleTableCards(idx) {
+          this.tableCards[idx-1].active = !this.tableCards[idx-1].active
+          console.info("toggleTableCards: "+JSON.stringify(this.tableCards))
+      },
+      isCardVisible(list, idx) {
+          var val = (idx <= list.length)?true:false
+          console.info("isCardVisible: idx:"+ idx + "ret:" + val + " list:"+JSON.stringify(list))
+          return val
+      },
   },
   created() {
       console.log("created")
@@ -233,7 +267,6 @@ export default {
         gameId: null,
         myhand: [],
         tableCards:[],
-
   }),
 }
 </script>
