@@ -31,32 +31,31 @@
     <v-divider></v-divider>
   </v-layout>
   <v-layout class="pa-3" row>
-    <v-flex class="pa-2" md1>
+    <v-flex class="pa-2" md3>
         <v-card>
-            <v-card class="pa-2">
               <v-img
                   src="@/assets/scopa.jpg"
                   class="grey lighten-2"
               >
               </v-img>
-            </v-card>
-            <v-divider class="pa-2"/>
             <v-text-field class="pa-2" dense outlined label="Cards" :value="cardsLeft"/>
+            <v-card-actions>
+                    <v-btn
+                        v-on:click="makePlay()"
+                        rounded
+                        color="primary"
+                        v-show="isPlayerTurn"
+                        :disabled="!isPlayButtonEnabled"
+                    >
+                        {{playButtonText}}
+                    </v-btn>
+            </v-card-actions>
         </v-card>
     </v-flex>
     <v-flex md2>
-        <v-btn
-            rounded
-            color="primary"
-            dark
-            v-show="isPlayerTurn"
-        >
-            {{playButtonText}}
-        </v-btn>
     </v-flex>
     <v-flex class="pa-2" md6>
       <v-item-group tag="table" multiple>
-          <v-card height="100%">
             <v-layout v-for="r in 2" :key="r">
               <v-flex  class="pa-2" md2 v-for="c in 6" :key="c">
                   <v-item  v-slot="{active, toggle}">
@@ -73,10 +72,9 @@
                   </v-item>
               </v-flex>
             </v-layout>
-        </v-card>
         </v-item-group>
     </v-flex>
-    <v-flex md2>
+    <v-flex md3>
     </v-flex>
   </v-layout>
   <v-layout class="pa-2">
@@ -169,6 +167,31 @@ const cardfaces = {
    "scopa" : require("@/assets/scopa.jpg"),
 }
 
+const Discard = {
+                 "@type" : "Discard",
+                 "type" : "DISCARD",
+                 "discarded" : {
+                   "val" : null,
+                   "suit" : null,
+                 }
+               }
+const Pickup = {
+                 "@type" : "Pickup",
+                 "type" : "PICKUP",
+                 "playerCard" : {
+                   "val" : null,
+                   "suit" : null,
+                 },
+                 "tableCards" : []
+               }
+
+const PlayResponseEvent = {
+                            "@type" : "PlayResponseEvent",
+                            "eventType" : "PLAY_RESP",
+                            "gameId" : null,
+                            "playerId" : null,
+                            "move" : null,
+                          }
 export default {
   name: 'GameBoard',
   computed: {
@@ -216,6 +239,8 @@ export default {
                 this.isPlayerTurn = false
             }
 
+            this.updatePlayText()
+
       },
       opponentCard: function(idx) {
           console.log("opponentCard idx:" + idx)
@@ -251,16 +276,73 @@ export default {
           console.info("toggleHandCards: idx:"+idx)
           this.myhand[idx-1].active = !this.myhand[idx-1].active
           console.info("toggleHandCards: "+JSON.stringify(this.myhand))
+          this.updatePlayText()
       },
       toggleTableCards(idx) {
           this.tableCards[idx-1].active = !this.tableCards[idx-1].active
           console.info("toggleTableCards: "+JSON.stringify(this.tableCards))
+          this.updatePlayText()
       },
       isCardVisible(list, idx) {
           var val = (idx <= list.length)?true:false
           console.info("isCardVisible: idx:"+ idx + "ret:" + val + " list:"+JSON.stringify(list))
           return val
       },
+      updatePlayText() {
+          var text = "Select Cards"
+          var enabled = false
+
+          this.myhand.forEach(function(i) {
+              if (i.active) {
+                  text = "Discard"
+                  enabled = true
+              }
+          })
+          this.tableCards.forEach(function(i) {
+              if (i.active) {
+                  text = "Pickup Cards"
+                  enabled = true
+              }
+          })
+          this.playButtonText = text
+          this.isPlayButtonEnabled = enabled
+          console.info("button text:" + this.playButtonText + " enabled:" + this.isPlayButtonEnabled)
+      },
+      makePlay() {
+                var event = PlayResponseEvent
+                event.gameId = this.getLastStatus.status.gameId
+                event.playerId = this.getLastStatus.status.playerDetails.playerId
+
+                var move = Discard
+
+                var pc = null
+                this.myhand.forEach(function(c) {
+                    if (c.active) {
+                        pc = { val: c.val, suit: c.suit}
+                    }
+                })
+
+                var cl = []
+                this.myhand.forEach(function(c) {
+                    if (c.active) {
+                        cl.push({val: c.val, suit: c.suit})
+                    }
+                })
+
+                if (cl.length > 0) {
+                    move = Pickup
+                    move.playerCard = pc
+                    move.tableCards = cl
+                } else {
+                    move.discarded = pc
+                }
+                event.move = move
+
+
+                console.info("Adding play event: "+JSON.stringify(event))
+                this.$store.dispatch("addEventOut", event)
+
+      }
   },
   created() {
       console.log("created")
@@ -279,6 +361,7 @@ export default {
         tableCards:[],
         playButtonText: 'Discard',
         isPlayerTurn: false,
+        isPlayButtonEnabled: false
 
   }),
 }
