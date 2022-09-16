@@ -1,7 +1,7 @@
 <template>
 <v-container>
   <v-layout class="pa-3" row>
-    <v-flex class="pa-2" md3>
+    <v-flex class="pa-2" md2>
         <v-card class="pa-2">
             <v-text-field label="Opponent" outlined :value="opponentName" clearable/>
             <v-text-field label="Score" outlined :value="opponentScore" disabled/>
@@ -9,14 +9,10 @@
     </v-flex>
     <v-flex md3>
     </v-flex>
-    <v-flex md3>
-        <v-item-group tag="opponent-group" width="100%">
+    <v-flex md6>
         <v-layout>
             <v-flex class="pa-2" md3  v-for="n in 3" :key="n">
-            <v-item  v-slot="{active, toggle}" enabled="false">
                 <v-card  class="pa-2"
-                    @click="toggle"
-                    :color="active?'primary':''"
                     outlined
                     shaped
                     tile>
@@ -26,10 +22,8 @@
                     >
                     </v-img>
                 </v-card>
-                </v-item>
             </v-flex>
-            </v-layout>
-        </v-item-group>
+        </v-layout>
     </v-flex>
     <v-flex md1></v-flex>
   </v-layout>
@@ -38,7 +32,7 @@
   </v-layout>
   <v-layout class="pa-3" row>
     <v-flex class="pa-2" md1>
-        <v-card >
+        <v-card>
             <v-card class="pa-2">
               <v-img
                   src="@/assets/scopa.jpg"
@@ -50,11 +44,19 @@
             <v-text-field class="pa-2" dense outlined label="Cards" :value="cardsLeft"/>
         </v-card>
     </v-flex>
-    <v-flex md4>
+    <v-flex md2>
+        <v-btn
+            rounded
+            color="primary"
+            dark
+            v-show="isPlayerTurn"
+        >
+            {{playButtonText}}
+        </v-btn>
     </v-flex>
     <v-flex class="pa-2" md6>
       <v-item-group tag="table" multiple>
-          <v-card >
+          <v-card height="100%">
             <v-layout v-for="r in 2" :key="r">
               <v-flex  class="pa-2" md2 v-for="c in 6" :key="c">
                   <v-item  v-slot="{active, toggle}">
@@ -74,12 +76,14 @@
         </v-card>
         </v-item-group>
     </v-flex>
+    <v-flex md2>
+    </v-flex>
   </v-layout>
   <v-layout class="pa-2">
     <v-divider></v-divider>
   </v-layout>
   <v-layout row class="pa-3">
-    <v-flex class="pa-2" md3>
+    <v-flex class="pa-2" md2>
         <v-card class="pa-2">
           <v-text-field label="You" outlined :value="playerName" clearable/>
           <v-text-field label="Score" outlined :value="playerScore" disabled/>
@@ -87,8 +91,8 @@
     </v-flex>
     <v-flex md3>
     </v-flex>
-    <v-flex md3>
-        <v-item-group tag="player-group" width="100%">
+    <v-flex md6>
+        <v-item-group tag="player-group">
         <v-layout>
             <v-flex  lass="pa-2" md3  v-for="n in 3" :key="n">
             <v-item  v-slot="{active, toggle}">
@@ -112,7 +116,6 @@
             </v-layout>
         </v-item-group>
     </v-flex>
-
     <v-flex md1></v-flex>
   </v-layout>
 </v-container>
@@ -206,6 +209,13 @@ export default {
             this.playerName = this.getLastStatus.status.playerDetails.screenHandle
             this.playerScore = this.getLastStatus.status.playerScore
 
+
+            if (this.getLastStatus.status.playerDetails.playerId == this.getLastStatus.status.currentPlayerId) {
+                this.isPlayerTurn = true
+            } else {
+                this.isPlayerTurn = false
+            }
+
       },
       opponentCard: function(idx) {
           console.log("opponentCard idx:" + idx)
@@ -267,6 +277,9 @@ export default {
         gameId: null,
         myhand: [],
         tableCards:[],
+        playButtonText: 'Discard',
+        isPlayerTurn: false,
+
   }),
 }
 </script>
