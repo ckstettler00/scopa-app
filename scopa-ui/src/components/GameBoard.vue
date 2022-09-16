@@ -317,15 +317,17 @@ export default {
 
                 var pc = null
                 this.myhand.forEach(function(c) {
+                    console.info("add play player card:"+JSON.stringify(c))
                     if (c.active) {
-                        pc = { val: c.val, suit: c.suit}
+                        pc = { val: c.card.val, suit: c.card.suit}
                     }
                 })
 
                 var cl = []
-                this.myhand.forEach(function(c) {
+                this.tableCards.forEach(function(c) {
+                    console.info("add play table card:"+JSON.stringify(c))
                     if (c.active) {
-                        cl.push({val: c.val, suit: c.suit})
+                        cl.push({val: c.card.val, suit: c.card.suit})
                     }
                 })
 
