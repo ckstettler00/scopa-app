@@ -24,7 +24,7 @@ const actions = {
     fetchGameList(context) {
        console.info("fetchGameList")
         axios
-        .get('http://localhost:8090/scopa/gamelist')
+        .get('http://10.0.0.31:8090/scopa/gamelist')
         .then((response) => {
           console.info("data:"+JSON.stringify(response.data))
           context.commit("SET_GAMELIST", response.data)
@@ -67,6 +67,10 @@ const actions = {
             console.info("addEventIn detected status "+JSON.stringify(e))
             context.commit("SET_LAST_STATUS", e)
         }
+        if (e.eventType == "ERROR") {
+            console.info("addEventIn detected error "+JSON.stringify(e))
+            context.commit("SET_LAST_ERROR", e)
+        }
     }
 }
 
@@ -84,6 +88,9 @@ const mutations = {
     },
     SET_LAST_STATUS(state, status) {
         state.lastStatus = status
+    },
+    SET_LAST_ERROR(state, event) {
+        state.lastError = event
     },
     CLEAR_EVENTS(state) {
         console.info("clear_events")

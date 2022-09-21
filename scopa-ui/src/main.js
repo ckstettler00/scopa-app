@@ -22,7 +22,30 @@ const router = new VueRouter({
 
 Vue.config.productionTip = false
 
-const ws = new WebSocket('ws://localhost:8090/scopaevents');
+var timerId = 0;
+function keepAlive() {
+    var timeout = 20000;
+    if (ws.readyState == ws.OPEN) {
+        console.info("keepalive")
+        ws.send('');
+    }
+    timerId = setTimeout(keepAlive, timeout);
+}
+function cancelKeepAlive() {
+    console.info("keepalive - cancel")
+    if (timerId) {
+        clearTimeout(timerId);
+    }
+}
+const ws = new WebSocket('ws://10.0.0.31:8090/scopaevents');
+ws.onopen = function(){
+    keepAlive()
+}
+
+
+ws.onclose = function(){
+    cancelKeepAlive()
+}
 
 const app = new Vue({
   vuetify,

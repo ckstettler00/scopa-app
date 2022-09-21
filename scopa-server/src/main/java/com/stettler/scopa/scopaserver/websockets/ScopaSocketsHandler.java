@@ -45,6 +45,10 @@ public class ScopaSocketsHandler extends TextWebSocketHandler {
         super.handleTextMessage(session, message);
 
         logger.debug("Received message: {}", message.getPayload());
+        if (message.getPayloadLength()==0) {
+            logger.debug("Received websocket keepalive");
+            return;
+        }
 
         GameEvent event = converter.convert(message.getPayload(), GameEvent.class);
 

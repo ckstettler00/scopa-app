@@ -19,7 +19,15 @@
       </div>
 
       <v-spacer></v-spacer>
+           <v-alert v-model="alert"
+           prominent
+           dismissible
+           border="left"
+           type="error">
+            {{errorText}}
+          </v-alert>
     </v-app-bar>
+
     <v-main>
          <router-view></router-view>
     </v-main>
@@ -27,16 +35,27 @@
 </template>
 
 <script>
-
+import { mapGetters } from 'vuex';
 export default {
   name: 'App',
 
   created() {
       this.$router.push("/join")
   },
-
+  computed: {
+      ...mapGetters(['getLastError'])
+  },
+  watch: {
+        getLastError : function() {
+            console.info("error handler:"+JSON.stringify(this.getLastError))
+            this.alert=true
+            this.errorText = this.getLastError.message
+        }
+    },
   data: () => ({
-    //
+        snackbar: false,
+        alert: false,
+        errorText: 'UNKNOWN ERROR'
   }),
 };
 </script>

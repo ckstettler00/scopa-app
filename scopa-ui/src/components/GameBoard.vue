@@ -55,7 +55,7 @@
     <v-flex md2>
     </v-flex>
     <v-flex class="pa-2" md6>
-      <v-item-group tag="table" multiple>
+      <v-item-group tag="table" v-model="tableSelection" multiple>
             <v-layout v-for="r in 2" :key="r">
               <v-flex  class="pa-2" md2 v-for="c in 6" :key="c">
                   <v-item  v-slot="{active, toggle}">
@@ -63,7 +63,7 @@
                          :color="active ? 'primary' : ''"
 
                           @click="toggle"
-                          v-on:click="toggleTableCards((r-1)*6+c)"
+                          v-on:click="toggleTableCards()"
                     :disabled="!isCardVisible(tableCards,(r-1)*6+c)">
                           <v-img :src="tableCard((r-1)*6+c)"
                               class="grey lighten-2">
@@ -90,13 +90,13 @@
     <v-flex md3>
     </v-flex>
     <v-flex md6>
-        <v-item-group tag="player-group">
+        <v-item-group tag="player-group" v-model="myhandSelection">
         <v-layout>
             <v-flex  lass="pa-2" md3  v-for="n in 3" :key="n">
             <v-item  v-slot="{active, toggle}">
                 <v-card  class="pa-2"
                     @click="toggle"
-                    v-on:click = "toggleHandCards(n)"
+                    v-on:click = "toggleHandCards()"
                     :color="active?'primary':''"
                     outlined
                     shaped
@@ -195,12 +195,17 @@ const PlayResponseEvent = {
 export default {
   name: 'GameBoard',
   computed: {
-      ...mapGetters(['getLastStatus'])
+      ...mapGetters(['getLastStatus','getLastError'])
   },
  watch: {
         getLastStatus : function() {
             console.info("getLastStatus changed: " + JSON.stringify(this.getLastStatus))
             this.refreshGameInfo()
+        },
+        getLastError : function() {
+            console.info("error handler")
+            this.snackbar = true
+            this.errorText = JSON.stringify(this.getLastError())
         }
     },
   methods: {
@@ -272,14 +277,21 @@ export default {
 
           return cardfaces[file]
       },
-      toggleHandCards(idx) {
-          console.info("toggleHandCards: idx:"+idx)
-          this.myhand[idx-1].active = !this.myhand[idx-1].active
+      toggleHandCards() {
+          console.info("toggleHandCards:"+JSON.stringify(this.myhandSelection))
+          this.myhand.forEach(c => c.active = false)
+          if (this.myhandSelection >= 0) {
+              this.myhand[this.myhandSelection].active = true
+          }
           console.info("toggleHandCards: "+JSON.stringify(this.myhand))
           this.updatePlayText()
       },
-      toggleTableCards(idx) {
-          this.tableCards[idx-1].active = !this.tableCards[idx-1].active
+      toggleTableCards() {
+          console.info("toggleTableCards:"+JSON.stringify(this.tableSelection))
+          this.tableCards.forEach( c => c.active = false)
+          if (this.tableSelection != null) {
+              this.tableSelection.forEach(idx => this.tableCards[idx].active = true)
+          }
           console.info("toggleTableCards: "+JSON.stringify(this.tableCards))
           this.updatePlayText()
       },
@@ -316,6 +328,7 @@ export default {
                 var move = Discard
 
                 var pc = null
+                console.info("makePlay: myhand:"+JSON.stringify(this.myhand))
                 this.myhand.forEach(function(c) {
                     console.info("add play player card:"+JSON.stringify(c))
                     if (c.active) {
@@ -340,8 +353,11 @@ export default {
                 }
                 event.move = move
 
+                // Clear selection
+                this.myhandSelection = null
+                this.tableSelection = null
 
-                console.info("Adding play event: "+JSON.stringify(event))
+                console.info("makePlay adding play event: "+JSON.stringify(event))
                 this.$store.dispatch("addEventOut", event)
 
       }
@@ -360,10 +376,13 @@ export default {
         cardsLeft: 0,
         gameId: null,
         myhand: [],
+        myhandSelection: null,
+        tableSelection: null,
         tableCards:[],
         playButtonText: 'Discard',
         isPlayerTurn: false,
-        isPlayButtonEnabled: false
+        isPlayButtonEnabled: false,
+
 
   }),
 }
