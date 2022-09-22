@@ -196,7 +196,7 @@
       ...mapActions(['fetchGameList']),
 
       startOrJoin() {
-          console.info(this.dialogLabel + " Game: " +
+          console.info(this.dialogLabel + " startOrJoin Game: " +
           this.screenHandle + " " +
           this.emailAddr + " " +
           this.secret)

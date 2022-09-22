@@ -22,9 +22,12 @@ const getters = {
 const actions = {
 
     fetchGameList(context) {
+       var api_url = window.location.protocol + "//"+window.location.hostname + ":8090/scopa/gamelist"
+       console.info("server url: "+ api_url)
+
        console.info("fetchGameList")
         axios
-        .get('http://10.0.0.31:8090/scopa/gamelist')
+        .get(api_url)
         .then((response) => {
           console.info("data:"+JSON.stringify(response.data))
           context.commit("SET_GAMELIST", response.data)
@@ -37,6 +40,7 @@ const actions = {
 
     sendEvents(context, ws) {
         var list = [...state.events_out]
+        console.info("sendEvents - all events:"+JSON.stringify(list))
         var e = list.shift()
         while (e != null) {
             console.info("sendEvents: event: " + JSON.stringify(e))
@@ -51,7 +55,7 @@ const actions = {
             }
             e = list.shift()
         }
-        if (list.length > 0) {
+        if (state.events_out.length > 0) {
             context.commit("CLEAR_EVENTS")
         }
     },

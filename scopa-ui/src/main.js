@@ -37,7 +37,9 @@ function cancelKeepAlive() {
         clearTimeout(timerId);
     }
 }
-const ws = new WebSocket('ws://10.0.0.31:8090/scopaevents');
+const ws_url = ((window.location.protocol.endsWith('s:'))?"wss":"ws") + "://"+window.location.hostname+":8090" + "/scopaevents"
+console.info("websocket url: ["+ws_url+"]")
+const ws = new WebSocket(ws_url);
 ws.onopen = function(){
     keepAlive()
 }
