@@ -4,10 +4,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.stettler.scopa.events.EventType;
 import com.stettler.scopa.events.NewGameEvent;
+import com.stettler.scopa.events.PlayResponseEvent;
 import com.stettler.scopa.events.RegisterEvent;
-import com.stettler.scopa.model.PlayerDetails;
+import com.stettler.scopa.model.*;
 import com.stettler.scopa.scopaserver.model.ScopaMessage;
 import org.junit.jupiter.api.Test;
+
+import java.util.Arrays;
 
 public class ModelTest {
     @Test
@@ -35,6 +38,15 @@ public class ModelTest {
         m.setPayload(mapper.writeValueAsString(new NewGameEvent(p)));
         System.out.println(mapper.writeValueAsString(m));
 
+        Card c = new Card(2, Suit.COINS);
+        Pickup t = new Pickup(c, Arrays.asList(c));
+        Discard d = new Discard(c);
+
+        System.out.println(mapper.writeValueAsString(d));
+        System.out.println(mapper.writeValueAsString(t));
+
+        PlayResponseEvent e = new PlayResponseEvent("playerid", t, "gameid");
+        System.out.println(mapper.writeValueAsString(e));
 
     }
 
