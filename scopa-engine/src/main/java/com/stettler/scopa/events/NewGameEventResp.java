@@ -1,10 +1,12 @@
 package com.stettler.scopa.events;
 
-import com.stettler.scopa.model.PlayerDetails;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 public class NewGameEventResp extends GameEvent {
 
+
+
+    public String sessionId;
     public NewGameEventResp() { super(EventType.NEWGAME_RESP);}
 
     public NewGameEventResp(String gameId) {

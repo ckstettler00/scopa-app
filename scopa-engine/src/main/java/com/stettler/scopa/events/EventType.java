@@ -13,5 +13,7 @@ public enum EventType {
     ERROR,
     SCOPA,
     SHUTDOWN,
+
+    RECONNECT,
     NOOP;
 };
