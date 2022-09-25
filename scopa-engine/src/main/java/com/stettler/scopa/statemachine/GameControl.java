@@ -99,6 +99,36 @@ public class GameControl extends EventSource {
         this.registerPlayer(details, source);
     }
 
+    synchronized boolean isAlreadyRegistered(PlayerDetails details) {
+
+        Pair<Player, EventSource> pair = null;
+
+        try {
+            pair = this.lookupPlayer(details.getPlayerId());
+        } catch (PlayerNotFoundException ex) {
+            logger.info("Player {} not registered yet. {}", details);
+            return false;
+        }
+
+        logger.info("Found player id already registered: {}", details.getPlayerId());
+        if (pair.getLeft().getDetails().getScreenHandle().equals(details.getScreenHandle())) {
+            logger.info("found a screen handle match {}", details.getScreenHandle());
+        } else {
+            logger.info("Matching player id but screen handles did not match  [{}]!=[{}]",
+                    pair.getLeft().getDetails().getScreenHandle(), details.getScreenHandle());
+            return false;
+        }
+        if (pair.getLeft().getDetails().getPlayerSecret().equals(details.getPlayerSecret())) {
+            logger.info("Player secret matched");
+            return true;
+        } else {
+            logger.info("Player secret did not match");
+        }
+
+        logger.info("player not registered: {}", details);
+        return false;
+    }
+
     /**
      * Register the player with the game controller.
      *
@@ -106,6 +136,12 @@ public class GameControl extends EventSource {
      */
     synchronized public boolean registerPlayer(PlayerDetails details, EventSource source) {
         logger.info("Registering Player event source. {}", source);
+
+        if (isAlreadyRegistered(details)) {
+            logger.info("Player was already registered.  Mapping new event source.");
+            this.playerMap.put(details.getPlayerId(), source);
+            return true;
+        }
 
         if (!currentState.equals(State.WAIT_FOR_PLAYER1) && !currentState.equals(State.WAIT_FOR_PLAYER2)) {
             logger.error("Player {} could not register invalid state {}", details, this.currentState);
@@ -203,12 +239,19 @@ public class GameControl extends EventSource {
     }
 
     protected Pair<Player, EventSource> lookupPlayer(String id) {
-        Player player1 = this.playerOrder.get(0);
-        Player player2 = this.playerOrder.get(1);
-        if (player1.getDetails().getPlayerId().equals(id)) {
+        Player player1=null;
+        Player player2=null;
+
+        if (this.playerOrder.size() >= 1) {
+            player1 = this.playerOrder.get(0);
+        }
+        if (this.playerOrder.size() >= 2) {
+            player2 = this.playerOrder.get(1);
+        }
+        if (player1 != null && player1.getDetails().getPlayerId().equals(id)) {
             return Pair.of(player1, this.playerMap.get(player1.getDetails().getPlayerId()));
         }
-        if (player2.getDetails().getPlayerId().equals(id)) {
+        if (player2 != null && player2.getDetails().getPlayerId().equals(id)) {
             return Pair.of(player2, this.playerMap.get(player2.getDetails().getPlayerId()));
         }
         throw new PlayerNotFoundException(id);
