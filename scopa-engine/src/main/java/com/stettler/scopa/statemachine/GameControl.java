@@ -99,36 +99,6 @@ public class GameControl extends EventSource {
         this.registerPlayer(details, source);
     }
 
-    synchronized boolean isAlreadyRegistered(PlayerDetails details) {
-
-        Pair<Player, EventSource> pair = null;
-
-        try {
-            pair = this.lookupPlayer(details.getPlayerId());
-        } catch (PlayerNotFoundException ex) {
-            logger.info("Player {} not registered yet. {}", details);
-            return false;
-        }
-
-        logger.info("Found player id already registered: {}", details.getPlayerId());
-        if (pair.getLeft().getDetails().getScreenHandle().equals(details.getScreenHandle())) {
-            logger.info("found a screen handle match {}", details.getScreenHandle());
-        } else {
-            logger.info("Matching player id but screen handles did not match  [{}]!=[{}]",
-                    pair.getLeft().getDetails().getScreenHandle(), details.getScreenHandle());
-            return false;
-        }
-        if (pair.getLeft().getDetails().getPlayerSecret().equals(details.getPlayerSecret())) {
-            logger.info("Player secret matched");
-            return true;
-        } else {
-            logger.info("Player secret did not match");
-        }
-
-        logger.info("player not registered: {}", details);
-        return false;
-    }
-
     /**
      * Register the player with the game controller.
      *
@@ -137,7 +107,8 @@ public class GameControl extends EventSource {
     synchronized public boolean registerPlayer(PlayerDetails details, EventSource source) {
         logger.info("Registering Player event source. {}", source);
 
-        if (isAlreadyRegistered(details)) {
+        if (this.isMatchingPlayer(details.getPlayerId(), details.getScreenHandle(),
+                details.getPlayerSecret())) {
             logger.info("Player was already registered.  Mapping new event source.");
             this.playerMap.put(details.getPlayerId(), source);
             return true;
@@ -237,7 +208,11 @@ public class GameControl extends EventSource {
     public Gameplay getGameplay() {
         return gameplay;
     }
-
+    protected boolean isMatchingPlayer(String playerId, String screenName, String password) {
+        Optional<Player> player = this.getAllPlayers().stream().filter(p -> (p.getDetails().getPlayerSecret().equals(password) &&
+                p.getDetails().getScreenHandle().equals(screenName)) || p.getDetails().getPlayerId().equals(playerId)).findFirst();
+        return player.isPresent();
+    }
     protected Pair<Player, EventSource> lookupPlayer(String id) {
         Player player1=null;
         Player player2=null;

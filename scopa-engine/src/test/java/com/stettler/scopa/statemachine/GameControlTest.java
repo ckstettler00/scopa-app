@@ -6,6 +6,7 @@ import com.stettler.scopa.model.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestTemplate;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -416,6 +417,30 @@ public class GameControlTest {
 
     }
 
+    @Test
+    void testRejoinGameSameNameAndSecret() throws Exception {
+        newGameAndRegistration();
+
+        com.stettler.scopa.model.PlayerDetails d1 = createPlayer1Details();
+        TestSource src = new TestSource();
+
+        List<Player> players = control.getAllPlayers();
+        control.registerPlayer(d1,src);
+        assertThat(players).containsAll(control.getAllPlayers());
+        assertThat(control.playerMap.get(d1.getPlayerId())).isEqualTo(src);
+    }
+    @Test
+    void testRejoinGamePlayerId() throws Exception {
+        newGameAndRegistration();
+
+        PlayerDetails d1 = control.getPlayer1().getDetails();
+        TestSource src = new TestSource();
+
+        List<Player> players = control.getAllPlayers();
+        control.registerPlayer(d1,src);
+        assertThat(players).containsAll(control.getAllPlayers());
+        assertThat(control.playerMap.get(d1.getPlayerId())).isEqualTo(src);
+    }
     @Test
     void testRegisterException() throws Exception {
         assertThatThrownBy(() -> {
