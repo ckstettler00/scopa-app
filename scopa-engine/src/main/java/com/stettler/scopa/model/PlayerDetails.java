@@ -6,6 +6,10 @@ import java.util.UUID;
 
 public class PlayerDetails {
 
+    public void setPlayerId(String playerId) {
+        this.playerId = playerId;
+    }
+
     private String playerId = UUID.randomUUID().toString();
     private String screenHandle;
     private String emailAddr;

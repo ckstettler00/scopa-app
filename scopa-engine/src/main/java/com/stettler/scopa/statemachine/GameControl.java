@@ -3,6 +3,7 @@ package com.stettler.scopa.statemachine;
 import com.stettler.scopa.events.*;
 import com.stettler.scopa.exceptions.*;
 import com.stettler.scopa.model.*;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -119,11 +120,6 @@ public class GameControl extends EventSource {
             throw new ScopaRuntimeException("Invalid state for registrations:" + this.currentState);
         }
 
-        if (this.playerMap.get(details.getPlayerId()) != null) {
-            logger.info("Player {} is already registered.");
-            return false;
-        }
-
         if (this.playerOrder.size() >= MAX_PLAYERS) {
             logger.error("Too many players {}", this.playerOrder);
             throw new ScopaRuntimeException("Unexpected exception too many players");
@@ -209,8 +205,8 @@ public class GameControl extends EventSource {
         return gameplay;
     }
     protected boolean isMatchingPlayer(String playerId, String screenName, String password) {
-        Optional<Player> player = this.getAllPlayers().stream().filter(p -> (p.getDetails().getPlayerSecret().equals(password) &&
-                p.getDetails().getScreenHandle().equals(screenName)) || p.getDetails().getPlayerId().equals(playerId)).findFirst();
+        Optional<Player> player = this.getAllPlayers().stream().filter(p -> (StringUtils.defaultString(p.getDetails().getPlayerSecret(),"").equals(password) &&
+                StringUtils.defaultString(p.getDetails().getScreenHandle(),"").equals(screenName)) || StringUtils.defaultString(p.getDetails().getPlayerId(),"").equals(playerId)).findFirst();
         return player.isPresent();
     }
     protected Pair<Player, EventSource> lookupPlayer(String id) {

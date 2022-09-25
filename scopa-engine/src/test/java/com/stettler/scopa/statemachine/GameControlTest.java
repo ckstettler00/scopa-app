@@ -433,7 +433,8 @@ public class GameControlTest {
     void testRejoinGamePlayerId() throws Exception {
         newGameAndRegistration();
 
-        PlayerDetails d1 = control.getPlayer1().getDetails();
+        PlayerDetails d1 = new PlayerDetails();
+        d1.setPlayerId(control.getPlayer1().getDetails().getPlayerId());
         TestSource src = new TestSource();
 
         List<Player> players = control.getAllPlayers();
