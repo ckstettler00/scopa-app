@@ -36,7 +36,7 @@ public class ScopaSocketsHandler extends TextWebSocketHandler {
         WebSocketEventSource client = this.factory.getBean(WebSocketEventSource.class, session);
         client.start();
 
-        logger.info("Registering client {}", session);
+        logger.info("Registering client {}", session.getId());
         clientToEventSource.put(session.getId(), client);
     }
 
@@ -44,7 +44,7 @@ public class ScopaSocketsHandler extends TextWebSocketHandler {
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         super.handleTextMessage(session, message);
 
-        logger.debug("Received message: {}", message.getPayload());
+        logger.debug("Session:{} Received message: {}", session.getId(), message.getPayload());
         if (message.getPayloadLength()==0) {
             logger.debug("Received websocket keepalive");
             return;
@@ -60,7 +60,7 @@ public class ScopaSocketsHandler extends TextWebSocketHandler {
             return;
         }
 
-        logger.debug("Sending event:{} to session's event source:{}", event, source);
+        logger.info("Forwarding socket message:{} to session's event source:{} session:{}", event, source, session.getId());
         source.triggerEvent(event);
 
     }
@@ -78,7 +78,7 @@ public class ScopaSocketsHandler extends TextWebSocketHandler {
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
         super.afterConnectionClosed(session, status);
-        logger.info("Connection closed removing session.");
+        logger.info("Connection closed removing session:{}", session.getId());
         clientToEventSource.remove(session.getId());
     }
 }

@@ -18,6 +18,7 @@ import org.assertj.core.util.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.convert.ConversionService;
@@ -48,6 +49,8 @@ public class StepDefinitions{
 
     TestUtils utils = new TestUtils();
 
+    @Value("${server.port}")
+    int serverPort;
 
     @Autowired
     ConversionService converter;
@@ -117,7 +120,7 @@ public class StepDefinitions{
     @Then("the game state becomes {string}")
     public void verifyCurrentGameState(String state) throws Exception {
 
-        ResponseEntity<List> statuses = template.getForEntity("http://localhost:8080/scopa/gamelist/"+TestContext.context().getGameId(),
+        ResponseEntity<List> statuses = template.getForEntity(String.format("http://localhost:%d/scopa/gamelist/",serverPort)+TestContext.context().getGameId(),
                 List.class);
         assertThat(statuses.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(statuses.getBody().size()).isGreaterThan(0);
@@ -176,7 +179,7 @@ public class StepDefinitions{
             setup.setCardsRemaining(Integer.parseInt(data.get("cardsRemaining")));
         }
         logger.info("gameSetup data {}", setup);
-        ResponseEntity<Void> resp = template.postForEntity("http://localhost:8080/testhelper/initgame/"+TestContext.context().getGameId(), setup,  Void.class);
+        ResponseEntity<Void> resp = template.postForEntity(String.format("http://localhost:%d/testhelper/initgame/", serverPort)+TestContext.context().getGameId(), setup,  Void.class);
         assertThat(resp.getStatusCode().is2xxSuccessful()).isTrue();
     }
     @And("player {int} picks up {string} with {string}")
@@ -227,7 +230,7 @@ public class StepDefinitions{
     private Pair<WebSocketSession, EventSource> createSession() throws Exception {
         WebSocketClient client = new StandardWebSocketClient();
         TestSocketHandler handler = new TestSocketHandler(converter);
-        ListenableFuture<WebSocketSession> session = client.doHandshake(handler, String.format("ws://localhost:8080/scopaevents"));
+        ListenableFuture<WebSocketSession> session = client.doHandshake(handler, String.format("ws://localhost:%d/scopaevents", serverPort));
         return Pair.of(session.get(), handler.getEventSource());
     }
 

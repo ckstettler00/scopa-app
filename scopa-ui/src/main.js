@@ -23,31 +23,41 @@ const router = new VueRouter({
 Vue.config.productionTip = false
 
 var timerId = 0;
-function keepAlive() {
-    var timeout = 20000;
-    if (ws.readyState == ws.OPEN) {
-        console.info("keepalive")
-        ws.send('');
-    }
-    timerId = setTimeout(keepAlive, timeout);
-}
-function cancelKeepAlive() {
-    console.info("keepalive - cancel")
-    if (timerId) {
-        clearTimeout(timerId);
-    }
-}
+var ws = {}
+
 const ws_url = ((window.location.protocol.endsWith('s:'))?"wss":"ws") + "://"+window.location.hostname+":8090" + "/scopaevents"
 console.info("websocket url: ["+ws_url+"]")
-const ws = new WebSocket(ws_url);
-ws.onopen = function(){
-    keepAlive()
-}
+const connect = () => {
+    console.info("connect -> connecting")
+    ws = new WebSocket(ws_url);
+
+    ws.onopen = function(){
+        keepAlive()
+    }
 
 
-ws.onclose = function(){
-    cancelKeepAlive()
+    ws.onclose = function(){
+        cancelKeepAlive()
+        setTimeout(connect, 1000)
+    }
+
+    const keepAlive = () => {
+        var timeout = 20000;
+        if (ws.readyState == ws.OPEN) {
+            console.info("keepalive")
+            ws.send('');
+        }
+        timerId = setTimeout(keepAlive, timeout);
+    }
+    const cancelKeepAlive = () => {
+        console.info("keepalive - cancel")
+        if (timerId) {
+            clearTimeout(timerId);
+        }
+    }
 }
+
+connect()
 
 const app = new Vue({
   vuetify,

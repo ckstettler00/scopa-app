@@ -209,6 +209,7 @@
 
           event.details.screenHandle = this.screenHandle
           event.details.emailAddr = this.emailAddr
+          event.details.playerSecret = this.secret
 
           console.info("Adding event: "+JSON.stringify(event))
           this.$store.dispatch("addEventOut", event)

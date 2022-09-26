@@ -32,6 +32,7 @@ public class WebSocketEventSource extends EventSource {
     private WebSocketSession session = null;
 
     public WebSocketEventSource(WebSocketSession session) {
+        logger.info("Creating WebSocketEventSource for session:{}", session.getId());
         this.session = session;
         this.addHandler(EventType.NEWGAME, this::handleNewGameEvent);
         this.addHandler(EventType.REGISTER, this::handleRegistration);
@@ -41,73 +42,54 @@ public class WebSocketEventSource extends EventSource {
         this.addHandler(EventType.PLAY_REQ, this::sendToClient);
         this.addHandler(EventType.SCOPA, this::sendToClient);
         this.addHandler(EventType.ERROR, this::sendToClient);
-        this.addHandler(EventType.RECONNECT, this::handleReconnect);
     }
 
     protected void handlePlayResponse(GameEvent event) {
-        logger.info("Playing a move {}", event);
+        logger.info("Session:{} handlePlayResponse {}", this.session.getId(), event);
         GameControl game = registry.findGame(event.getGameId());
         if (game == null) {
-            logger.error("play failed. game not found: {}", event);
+            logger.error("Session:{} play failed. game not found: {}", this.session.getId(), event);
             throw new ScopaRuntimeException("failed to find game: "+event.getGameId());
         }
 
-        logger.info("forwarding event to game controller: {} event:{}", game.getGameId(),
+        logger.info("Session:{} forwarding event to game controller: {} event:{}",
+                this.session.getId(), game.getGameId(),
                 event);
         game.triggerEvent(event);
 
     }
     protected void handleNewGameEvent(GameEvent event) {
-        logger.info("Registering new game event: {}", event);
+        logger.info("Session:{} Registering new game event: {}", this.session.getId(), event);
         GameControl game = registry.newGame();
 
         // Trigger the new game event first
         game.initializeGame(((NewGameEvent)event).getDetails(), this);
 
-        logger.info("registered game id {} back to the client.", game.getGameId());
+        logger.info("Session:{} registered game id {} back to the client.",
+                this.session.getId(), game.getGameId());
         NewGameEventResp resp = new NewGameEventResp(game.getGameId());
         sendToClient(resp);
     }
 
-    protected void handleReconnect(GameEvent event) {
-        logger.info("handleReconnect {}", event);
-        ReconnectEvent reconnectEvent = (ReconnectEvent) event;
-        if (reconnectEvent.getGameId() == null) {
-            logger.error("Invalid game id received: {}", reconnectEvent.getGameId());
-            throw new ScopaRuntimeException("Invalid game id " + reconnectEvent.getGameId());
-        }
-        if (reconnectEvent.getPlayerId() == null) {
-            logger.error("Invalid player id received: {}", reconnectEvent.getPlayerId());
-            throw new ScopaRuntimeException("Invalid player id " + reconnectEvent.getPlayerId());
-        }
-
-        GameControl game = registry.findGameWithPlayerId(reconnectEvent.getGameId(), reconnectEvent.getPlayerId());
-        if (game == null) {
-            logger.error("Invalid game id received: {}", reconnectEvent.getGameId());
-            throw new ScopaRuntimeException("Invalid game id " + reconnectEvent.getGameId());
-        }
-
-        // Should be empty by this point.
-        Optional<Player> player = game.getAllPlayers().stream().filter(p -> p.getDetails().getPlayerId().equals(event.getPlayerId())).findFirst();
-
-        // Send an update game status to the new connection.
-        logger.info("handleReconnect: successful");
-        sendToClient(new GameStatusEvent(game.getStatus(player.get())));
-    }
     protected void handleRegistration(GameEvent event) {
         RegisterEvent registerEvent = (RegisterEvent) event;
         if (registerEvent.getGameId() == null) {
-            logger.error("Invalid game id received: {}", registerEvent.getGameId());
+            logger.error("Session:{} Invalid game id received: {}",
+                    this.session.getId(), registerEvent.getGameId());
             throw new ScopaRuntimeException("Invalid game id " + registerEvent.getGameId());
         }
-        logger.debug("Locate game id: {}", registerEvent.getGameId());
+        logger.debug("Session:{} Locate game id: {}",
+                this.session.getId(), registerEvent.getGameId());
         GameControl game = registry.findGame(registerEvent.getGameId());
         if (game == null) {
-            logger.error("Invalid game id received: {}", registerEvent.getGameId());
+            logger.error("Session:{} Invalid game id received: {}", this.session.getId(),
+                    registerEvent.getGameId());
             throw new ScopaRuntimeException("Invalid game id " + registerEvent.getGameId());
         }
-        logger.info("Processing registerEvent details {}", registerEvent);
+        logger.info("Session:{} Processing registerEvent details {}", this.session.getId(),
+                registerEvent);
         game.registerPlayer(registerEvent.getDetails(), this);
+
     }
 
     @Override
@@ -130,12 +112,17 @@ public class WebSocketEventSource extends EventSource {
         String msg = converter.convert(event, String.class);
         try {
             synchronized(this.session) {
-                logger.info("sendToClient: {}", event);
+                logger.info("Session:{} sendToClient: {}", this.session.getId(), event);
                 this.session.sendMessage(new TextMessage(msg));
             }
         } catch (IOException e) {
-            logger.error("Failed to write message to the client: {}", msg);
+            logger.error("Session:{} Failed to write message to the client: {}", this.session.getId(), msg);
             throw new ScopaRuntimeException("Failed to write event to client");
         }
+    }
+    @Override
+    public String toString() {
+        return String.format("WebSocketEventSource: session:%s source:%s" +
+                "", this.session, this.getSourceId());
     }
 }
