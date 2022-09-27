@@ -10,8 +10,8 @@
     <v-flex md3>
     </v-flex>
     <v-flex md6>
-        <v-layout>
-            <v-flex class="pa-2" md3  v-for="n in 3" :key="n">
+        <v-layout row>
+            <v-flex class="pa-2" md2  v-for="n in 3" :key="n">
                 <v-card  class="pa-2"
                     outlined
                     shaped
@@ -24,6 +24,11 @@
                 </v-card>
             </v-flex>
         </v-layout>
+        <v-layout row>
+            <v-flex fill-height class="pa-2" md6>
+                <div></div>
+            </v-flex>
+        </v-layout>
     </v-flex>
     <v-flex md1></v-flex>
   </v-layout>
@@ -31,26 +36,24 @@
     <v-divider></v-divider>
   </v-layout>
   <v-layout class="pa-3" row>
-    <v-flex class="pa-2" md3>
-        <v-card>
-              <v-img
-                  src="@/assets/scopa.jpg"
-                  class="grey lighten-2"
-              >
-              </v-img>
-            <v-text-field class="pa-2" dense outlined label="Cards" :value="cardsLeft"/>
-            <v-card-actions>
-                    <v-btn
-                        v-on:click="makePlay()"
-                        rounded
-                        color="primary"
-                        v-show="isPlayerTurn"
-                        :disabled="!isPlayButtonEnabled"
-                    >
-                        {{playButtonText}}
-                    </v-btn>
-            </v-card-actions>
-        </v-card>
+    <v-flex class="pa-2" md2>
+        <v-layout class="pa-2" row>
+            <v-flex class="pa-2" md6>
+                <v-card>
+                  <v-img
+                      src="@/assets/scopa.jpg"
+                      class="grey lighten-2"
+                  >
+                  </v-img>
+                  <v-text-field class="pa-2" dense outlined label="Cards" :value="cardsLeft"/>
+                </v-card>
+            </v-flex>
+        </v-layout>
+        <v-layout class ="pa-2" row>
+            <v-flex class="pa-2" md6>
+                <div fill-height ></div>
+            </v-flex>
+        </v-layout>
     </v-flex>
     <v-flex md2>
     </v-flex>
@@ -74,7 +77,7 @@
             </v-layout>
         </v-item-group>
     </v-flex>
-    <v-flex md3>
+    <v-flex md2>
     </v-flex>
   </v-layout>
   <v-layout class="pa-2">
@@ -87,30 +90,65 @@
           <v-text-field label="Score" outlined :value="playerScore" disabled/>
         </v-card>
     </v-flex>
-    <v-flex md3>
+    <v-flex align="center" md3>
+        <v-layout class="pa-2" row>
+            <v-flex fill-height>
+            </v-flex>
+        </v-layout>
+        <v-layout class="pa-2" row>
+            <v-flex md3 lg3>
+                <div>
+                                <v-img v-if="isPlayerTurn"
+                                  src="@/assets/right-arrow.png"
+                                  class="grey lighten-2"
+                                  style="transform: rotate(0deg)"
+                                >
+                                </v-img>
+                </div>
+            </v-flex>
+        </v-layout>
+        <v-layout class="pa-2">
+            <v-flex fill-height>
+            </v-flex>
+        </v-layout>
     </v-flex>
     <v-flex md6>
         <v-item-group tag="player-group" v-model="myhandSelection">
-        <v-layout>
-            <v-flex  lass="pa-2" md3  v-for="n in 3" :key="n">
-            <v-item  v-slot="{active, toggle}">
-                <v-card  class="pa-2"
-                    @click="toggle"
-                    v-on:click = "toggleHandCards()"
-                    :color="active?'primary':''"
-                    outlined
-                    shaped
-                    tile
-                    :disabled="!isCardVisible(myhand, n)"
-                    >
-                    <v-img
-                      :src="playerCard(n)"
-                      class="grey lighten-2"
-                    >
-                    </v-img>
-                </v-card>
-                </v-item>
-            </v-flex>
+            <v-layout class="pa-2" row>
+                    <v-flex class="pa-2" fill-height md6>
+                        <div align="center" >
+                             <v-btn
+                                v-on:click="makePlay()"
+                                rounded
+                                color="primary"
+                                v-show="isPlayerTurn"
+                                :disabled="!isPlayButtonEnabled"
+                            >
+                                {{playButtonText}}
+                            </v-btn>
+                        </div>
+                    </v-flex>
+            </v-layout>
+            <v-layout class="pa-2" row>
+                <v-flex  class="pa-2" md2  v-for="n in 3" :key="n">
+                <v-item  v-slot="{active, toggle}">
+                    <v-card  class="pa-2"
+                        @click="toggle"
+                        v-on:click = "toggleHandCards()"
+                        :color="active?'primary':''"
+                        outlined
+                        shaped
+                        tile
+                        :disabled="!isCardVisible(myhand, n)"
+                        >
+                        <v-img
+                          :src="playerCard(n)"
+                          class="grey lighten-2"
+                        >
+                        </v-img>
+                    </v-card>
+                    </v-item>
+                </v-flex>
             </v-layout>
         </v-item-group>
     </v-flex>

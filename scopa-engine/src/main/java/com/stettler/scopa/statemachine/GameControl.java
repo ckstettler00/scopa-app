@@ -21,10 +21,10 @@ public class GameControl extends EventSource {
     State currentState;
 
     Map<String, EventSource> playerMap = new ConcurrentHashMap<>();
+
     List<Player> playerOrder = new ArrayList<>();
 
     Player currentPlayer = null;
-    EventSource currentPlayerSource = null;
 
     Player lastTrickPlayer = null;
     int turnCounter = -1;
@@ -108,10 +108,14 @@ public class GameControl extends EventSource {
     synchronized public boolean registerPlayer(PlayerDetails details, EventSource source) {
         logger.info("Registering Player event source. {}", source);
 
-        if (this.isMatchingPlayer(details.getPlayerId(), details.getScreenHandle(),
-                details.getPlayerSecret())) {
-            logger.info("Player was already registered.  Mapping new event source.");
-            this.playerMap.put(details.getPlayerId(), source);
+        logger.info("Checking to see if player is already registered to this game: {}", details);
+        Optional<Player> tmpPlayer = findMatchingPlayer(details.getPlayerId(), details.getScreenHandle(),
+                details.getPlayerSecret());
+        if (tmpPlayer.isPresent()) {
+            logger.info("Player was already registered.  Mapping new event source: {}", source);
+            this.playerMap.put(tmpPlayer.get().getDetails().getPlayerId(), source);
+            logger.info("Sending a game status event for the rejoining of the game. map:{}", this.playerMap);
+            source.triggerEvent(new GameStatusEvent(this.getStatus(tmpPlayer.get())));
             return true;
         }
 
@@ -175,7 +179,7 @@ public class GameControl extends EventSource {
 
             if (ex instanceof InvalidMoveException) {
                 logger.error("Re-requesting the player to move: {}", currentPlayer);
-                currentPlayerSource.triggerEvent(new PlayRequestEvent(currentPlayer.getDetails()));
+                lookupSource(this.currentPlayer).triggerEvent(new PlayRequestEvent(currentPlayer.getDetails()));
             }
         } else {
             logger.error("Unhandled exception detected", ex);
@@ -195,19 +199,24 @@ public class GameControl extends EventSource {
         currentState = next;
     }
 
+    protected EventSource lookupSource(Player p) {
+        logger.info("lookupSource: source:{} player:{}", this.playerMap, p.getDetails());
+        return this.playerMap.get(p.getDetails().getPlayerId());
+    }
+
     protected void setCurrentPlayer(Player player, EventSource source) {
         logger.info("Play id:{} is now the current player.", player.getDetails().getPlayerId());
         this.currentPlayer = player;
-        this.currentPlayerSource = source;
     }
 
     public Gameplay getGameplay() {
         return gameplay;
     }
-    protected boolean isMatchingPlayer(String playerId, String screenName, String password) {
+    protected Optional<Player> findMatchingPlayer(String playerId, String screenName, String password) {
+        logger.info("isMatching player [{}][{}][{}] players:{}", playerId, screenName, password, this.getAllPlayers());
         Optional<Player> player = this.getAllPlayers().stream().filter(p -> (StringUtils.defaultString(p.getDetails().getPlayerSecret(),"").equals(password) &&
                 StringUtils.defaultString(p.getDetails().getScreenHandle(),"").equals(screenName)) || StringUtils.defaultString(p.getDetails().getPlayerId(),"").equals(playerId)).findFirst();
-        return player.isPresent();
+        return player;
     }
     protected Pair<Player, EventSource> lookupPlayer(String id) {
         Player player1=null;
@@ -311,10 +320,10 @@ public class GameControl extends EventSource {
                         this.playerOrder.get(0).getHand().size() == 0 &&
                         this.playerOrder.get(1).getHand().size() == 0) {
                     logger.info("Scopa ended the game, so no point is awarded");
-                    currentPlayerSource.triggerEvent(new ScopaEvent(true));
+                    lookupSource(this.currentPlayer).triggerEvent(new ScopaEvent(true));
                 } else {
                     logger.info("Player {} got a scopa", currentPlayer);
-                    currentPlayerSource.triggerEvent(new ScopaEvent());
+                    lookupSource(this.currentPlayer).triggerEvent(new ScopaEvent());
                     currentPlayer.setScore(currentPlayer.getScore() + 1);
                 }
             }
@@ -407,7 +416,7 @@ public class GameControl extends EventSource {
         // Send a request for player to play.
         logger.debug("waiting for player id: {} handle:{} to move", currentPlayer.getDetails().getPlayerId(),
                 currentPlayer.getDetails().getScreenHandle());
-        currentPlayerSource.triggerEvent(new PlayRequestEvent(currentPlayer.getDetails()));
+        lookupSource(this.currentPlayer).triggerEvent(new PlayRequestEvent(currentPlayer.getDetails()));
     }
 
     protected synchronized void handleRegister(GameEvent event) {
@@ -430,6 +439,8 @@ public class GameControl extends EventSource {
     }
 
     protected void sendStatuses() {
+
+        logger.info("sendStatuses: eventSourceMap:{}", this.playerMap);
         this.playerOrder.forEach(p -> {
             lookupPlayer(p.getDetails().getPlayerId()).getRight().triggerEvent(new GameStatusEvent(getStatus(p)));
         });

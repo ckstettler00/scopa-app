@@ -114,7 +114,7 @@ const mutations = {
               if (list[i].playerList.length > 1) {
                   games[i].opponent = list[i].playerList[1]
               }
-              if (list[i].playerList.length == 1) {
+              if (list[i].playerList.length >= 1) {
                   games[i].canJoin = true
               }
           }
