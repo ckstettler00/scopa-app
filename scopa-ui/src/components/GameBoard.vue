@@ -1,17 +1,17 @@
 <template>
 <v-container>
-  <v-layout class="pa-3" row>
-    <v-flex class="pa-2" md2>
+  <v-row class="pa-3">
+    <v-col class="pa-2" cols=2>
         <v-card class="pa-2">
             <v-text-field label="Opponent" outlined :value="opponentName" clearable/>
             <v-text-field label="Score" outlined :value="opponentScore" disabled/>
         </v-card>
-    </v-flex>
-    <v-flex md3>
-    </v-flex>
-    <v-flex md6>
-        <v-layout row>
-            <v-flex class="pa-2" md2  v-for="n in 3" :key="n">
+    </v-col>
+    <v-col cols=2>
+    </v-col>
+    <v-col cols=7>
+        <v-row>
+            <v-col class="pa-2" cols=2  v-for="n in 3" :key="n">
                 <v-card  class="pa-2"
                     outlined
                     shaped
@@ -22,45 +22,52 @@
                     >
                     </v-img>
                 </v-card>
-            </v-flex>
-        </v-layout>
-        <v-layout row>
-            <v-flex fill-height class="pa-2" md6>
+            </v-col>
+            <v-col cols=6>
+                <v-spacer/>
+            </v-col>
+        </v-row>
+        <v-row row>
+            <v-col fill-height class="pa-2" cols=12>
                 <div></div>
-            </v-flex>
-        </v-layout>
-    </v-flex>
-    <v-flex md1></v-flex>
-  </v-layout>
-  <v-layout class="pa-2">
+            </v-col>
+        </v-row>
+    </v-col>
+    <v-col cols=1></v-col>
+  </v-row>
+  <v-row class="pa-2">
     <v-divider></v-divider>
-  </v-layout>
-  <v-layout class="pa-3" row>
-    <v-flex class="pa-2" md2>
-        <v-layout class="pa-2" row>
-            <v-flex class="pa-2" md6>
+  </v-row>
+  <v-row class="pa-3">
+    <v-col class="pa-2" cols=2>
+        <v-row class="pa-2">
+            <v-col class="pa-2" cols=12>
                 <v-card>
+                  <div class="pa-4" align="center">
                   <v-img
                       src="@/assets/scopa.jpg"
                       class="grey lighten-2"
+                      align="center"
+                      width="75%"
                   >
                   </v-img>
+                  </div>
                   <v-text-field class="pa-2" dense outlined label="Cards" :value="cardsLeft"/>
                 </v-card>
-            </v-flex>
-        </v-layout>
-        <v-layout class ="pa-2" row>
-            <v-flex class="pa-2" md6>
+            </v-col>
+        </v-row>
+        <v-row class ="pa-2">
+            <v-col class="pa-2" cols=12>
                 <div fill-height ></div>
-            </v-flex>
-        </v-layout>
-    </v-flex>
-    <v-flex md2>
-    </v-flex>
-    <v-flex class="pa-2" md6>
+            </v-col>
+        </v-row>
+    </v-col>
+    <v-col cols=1>
+    </v-col>
+    <v-col class="pa-2" cols=8>
       <v-item-group tag="table" v-model="tableSelection" multiple>
-            <v-layout v-for="r in 2" :key="r">
-              <v-flex  class="pa-2" md2 v-for="c in 6" :key="c">
+            <v-row v-for="r in 2" :key="r">
+              <v-col  class="pa-2" cols=2 v-for="c in 6" :key="c">
                   <v-item  v-slot="{active, toggle}">
                       <v-card class="pa-2"
                          :color="active ? 'primary' : ''"
@@ -73,64 +80,70 @@
                           </v-img>
                       </v-card>
                   </v-item>
-              </v-flex>
-            </v-layout>
+              </v-col>
+            </v-row>
         </v-item-group>
-    </v-flex>
-    <v-flex md2>
-    </v-flex>
-  </v-layout>
-  <v-layout class="pa-2">
+    </v-col>
+    <v-col cols=1>
+    </v-col>
+  </v-row>
+  <v-row>
     <v-divider></v-divider>
-  </v-layout>
-  <v-layout row class="pa-3">
-    <v-flex class="pa-2" md2>
-        <v-card class="pa-2">
+  </v-row>
+  <v-row row class="pa-3">
+    <v-col class="pa-2" cols=2>
+        <v-card align="center" class="pa-2">
           <v-text-field label="You" outlined :value="playerName" clearable/>
           <v-text-field label="Score" outlined :value="playerScore" disabled/>
         </v-card>
-    </v-flex>
-    <v-flex align="center" md3>
-        <v-layout class="pa-2" row>
-            <v-flex fill-height>
-            </v-flex>
-        </v-layout>
-        <v-layout class="pa-2" row>
-            <v-flex md3 lg3>
+    </v-col>
+    <v-col align="center" cols=2>
+        <v-row class="pa-1">
+            <v-col cols=3>
+                <v-spacer/>
+            </v-col>
+            <v-col cols=6>
                 <div>
-                                <v-img v-if="isPlayerTurn"
-                                  src="@/assets/right-arrow.png"
-                                  class="grey lighten-2"
-                                  style="transform: rotate(0deg)"
-                                >
-                                </v-img>
+                    <v-img v-if="isPlayerTurn"
+                      src="@/assets/right-arrow.png"
+                      class="grey lighten-2"
+                      style="transform: rotate(0deg)"
+                    >
+                    </v-img>
                 </div>
-            </v-flex>
-        </v-layout>
-        <v-layout class="pa-2">
-            <v-flex fill-height>
-            </v-flex>
-        </v-layout>
-    </v-flex>
-    <v-flex md6>
+            </v-col>
+            <v-col cols=3>
+                <v-spacer/>
+            </v-col>
+        </v-row>
+        <v-row class="pa-2">
+            <v-col fill-height cols=12>
+                <v-spacer/>
+            </v-col>
+        </v-row>
+    </v-col>
+    <v-col cols=7>
         <v-item-group tag="player-group" v-model="myhandSelection">
-            <v-layout class="pa-2" row>
-                    <v-flex class="pa-2" fill-height md6>
-                        <div align="center" >
+            <v-row class="pa-1" row>
+                    <v-col fill-height cols=6>
+                        <div align="center">
                              <v-btn
                                 v-on:click="makePlay()"
                                 rounded
                                 color="primary"
                                 v-show="isPlayerTurn"
                                 :disabled="!isPlayButtonEnabled"
+                                block
                             >
                                 {{playButtonText}}
                             </v-btn>
                         </div>
-                    </v-flex>
-            </v-layout>
-            <v-layout class="pa-2" row>
-                <v-flex  class="pa-2" md2  v-for="n in 3" :key="n">
+                    </v-col>
+                    <v-col cols=6>
+                    </v-col>
+            </v-row>
+            <v-row class="pa-2" row>
+                <v-col  class="pa-2" cols=2  v-for="n in 3" :key="n">
                 <v-item  v-slot="{active, toggle}">
                     <v-card  class="pa-2"
                         @click="toggle"
@@ -148,12 +161,15 @@
                         </v-img>
                     </v-card>
                     </v-item>
-                </v-flex>
-            </v-layout>
+                </v-col>
+                <v-col cols=6>
+                <v-spacer/>
+                </v-col>
+            </v-row>
         </v-item-group>
-    </v-flex>
-    <v-flex md1></v-flex>
-  </v-layout>
+    </v-col>
+    <v-col cols=1></v-col>
+  </v-row>
 </v-container>
 </template>
 
