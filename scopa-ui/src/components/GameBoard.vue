@@ -28,9 +28,18 @@
             </v-col>
         </v-row>
         <v-row row>
-            <v-col fill-height class="pa-2" cols=12>
-                <div></div>
+            <v-col cols=3>
+                <div align="center">
+                    <v-progress-circular
+                      indeterminate
+                      color="green"
+                      v-show="!isPlayerTurn"
+                      large
+                    ></v-progress-circular>
+                </div>
             </v-col>
+            <v-col cols=2>{{(!isPlayerTurn)?opponentName+"'s move.":''}}</v-col>
+            <v-col cols=7></v-col>
         </v-row>
     </v-col>
     <v-col cols=1></v-col>
