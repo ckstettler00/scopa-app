@@ -65,6 +65,13 @@ public class Gameplay {
 
         int sum = 0;
 
+        if (pickup.getPlayerCard() == null) {
+            throw new InvalidMoveException(player.getDetails().getPlayerId(), pickup, "You must provide a card to pickup with.");
+        }
+        if (pickup.getTableCards()==null || pickup.getTableCards().size()==0) {
+            throw new InvalidMoveException(player.getDetails().getPlayerId(), pickup, "Your list to pickup was empty.");
+        }
+
         if (pickup.getTableCards().size() != 1) {
             for (Card C : tableCards) {
                 if (C.getVal() == pickup.getPlayerCard().getVal()) {
@@ -92,6 +99,9 @@ public class Gameplay {
 
     public Move handleDiscard(Player player, Discard discard) {
 
+        if (discard.getDiscarded() == null) {
+            throw new InvalidMoveException(player.getDetails().getPlayerId(), discard, "No discard was provided.");
+        }
         List<Card> sorted = this.tableCards.stream().sorted().collect(Collectors.toList());
         int maxSet = findMaxSetSize(sorted, discard.getDiscarded().getVal());
 

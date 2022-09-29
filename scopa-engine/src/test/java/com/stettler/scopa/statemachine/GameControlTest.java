@@ -422,13 +422,17 @@ public class GameControlTest {
         newGameAndRegistration();
 
         com.stettler.scopa.model.PlayerDetails d1 = createPlayer1Details();
+        d1.setPlayerId(null);
         TestSource src = new TestSource();
 
-        List<Player> players = control.getAllPlayers();
+        List<Player> players = new ArrayList();
+        players.addAll(control.getAllPlayers());
+
         control.registerPlayer(d1,src);
-        assertThat(players).containsAll(control.getAllPlayers());
-        assertThat(control.playerMap.get(d1.getPlayerId())).isEqualTo(src);
+        assertThat(players).containsExactlyElementsOf(control.getAllPlayers());
+        assertThat(control.playerMap.get(control.getAllPlayers().get(0).getDetails().getPlayerId())).isEqualTo(src);
     }
+
     @Test
     void testRejoinGamePlayerId() throws Exception {
         newGameAndRegistration();
@@ -437,9 +441,10 @@ public class GameControlTest {
         d1.setPlayerId(control.getPlayer1().getDetails().getPlayerId());
         TestSource src = new TestSource();
 
-        List<Player> players = control.getAllPlayers();
+        List<Player> players = new ArrayList<>();
+        players.addAll(control.getAllPlayers());
         control.registerPlayer(d1,src);
-        assertThat(players).containsAll(control.getAllPlayers());
+        assertThat(players).containsExactlyElementsOf(control.getAllPlayers());
         assertThat(control.playerMap.get(d1.getPlayerId())).isEqualTo(src);
     }
     @Test
@@ -510,7 +515,73 @@ public class GameControlTest {
         assertThat(this.player2.getEvents().get(1)).isInstanceOf(PlayRequestEvent.class);
         assertThat(this.player2.getEvents().get(1).getPlayerId()).isEqualTo(this.player2Id);
     }
+    /**
+     * Test discarding an empty list.
+     */
+    @Test
+    void testMoveExceptionOnEmptyDiscard() throws Exception {
+        newGameAndRegistration();
+        control.gameplay.tableCards = new ArrayList<>(Arrays.asList(new Card(9, Suit.COINS), new Card(2, Suit.COINS),
+                new Card(3, Suit.COINS), new Card(4, Suit.COINS)));
+        control.getPlayer1().hand = new ArrayList<>(Arrays.asList(new Card(2, Suit.SCEPTERS), new Card(2, Suit.CUPS),
+                new Card(3, Suit.CUPS), new Card(9, Suit.CUPS)));
+        control.getPlayer2().hand = new ArrayList<>(Arrays.asList(new Card(1, Suit.SWORDS), new Card(2, Suit.SWORDS),
+                new Card(3, Suit.SWORDS), new Card(4, Suit.SWORDS)));
 
+        Discard move = new Discard();
+        triggerEvent(control, new PlayResponseEvent(player1Id, move, this.control.getGameId()));
+        assertThat(this.control.currentState).isEqualTo(State.WAIT_4_PLAYER1_MOVE);
+        assertThat(this.control.turnCounter).isEqualTo(0);
+
+        ErrorEvent tmpe = (ErrorEvent) player1.getEvents().get(0);
+        assertThat(tmpe.getMessage()).contains("No discard was provided.");
+
+    }
+    /**
+     * Test pickup with empty items
+     */
+    @Test
+    void testMoveExceptionOnEmptyHandCardOnPickup() throws Exception {
+        newGameAndRegistration();
+        control.gameplay.tableCards = new ArrayList<>(Arrays.asList(new Card(9, Suit.COINS), new Card(2, Suit.COINS),
+                new Card(3, Suit.COINS), new Card(4, Suit.COINS)));
+        control.getPlayer1().hand = new ArrayList<>(Arrays.asList(new Card(2, Suit.SCEPTERS), new Card(2, Suit.CUPS),
+                new Card(3, Suit.CUPS), new Card(9, Suit.CUPS)));
+        control.getPlayer2().hand = new ArrayList<>(Arrays.asList(new Card(1, Suit.SWORDS), new Card(2, Suit.SWORDS),
+                new Card(3, Suit.SWORDS), new Card(4, Suit.SWORDS)));
+
+        Pickup move = new Pickup();
+        triggerEvent(control, new PlayResponseEvent(player1Id, move, this.control.getGameId()));
+        assertThat(this.control.currentState).isEqualTo(State.WAIT_4_PLAYER1_MOVE);
+        assertThat(this.control.turnCounter).isEqualTo(0);
+
+        ErrorEvent tmpe = (ErrorEvent) player1.getEvents().get(0);
+        assertThat(tmpe.getMessage()).contains("You must provide a card to pickup with.");
+
+    }
+    /**
+     * Test pickup with empty items
+     */
+    @Test
+    void testMoveExceptionOnEmptyPileForPickup() throws Exception {
+        newGameAndRegistration();
+        control.gameplay.tableCards = new ArrayList<>(Arrays.asList(new Card(9, Suit.COINS), new Card(2, Suit.COINS),
+                new Card(3, Suit.COINS), new Card(4, Suit.COINS)));
+        control.getPlayer1().hand = new ArrayList<>(Arrays.asList(new Card(2, Suit.SCEPTERS), new Card(2, Suit.CUPS),
+                new Card(3, Suit.CUPS), new Card(9, Suit.CUPS)));
+        control.getPlayer2().hand = new ArrayList<>(Arrays.asList(new Card(1, Suit.SWORDS), new Card(2, Suit.SWORDS),
+                new Card(3, Suit.SWORDS), new Card(4, Suit.SWORDS)));
+
+        Pickup move = new Pickup();
+        move.setPlayerCard(new Card(2, Suit.SCEPTERS));
+        triggerEvent(control, new PlayResponseEvent(player1Id, move, this.control.getGameId()));
+        assertThat(this.control.currentState).isEqualTo(State.WAIT_4_PLAYER1_MOVE);
+        assertThat(this.control.turnCounter).isEqualTo(0);
+
+        ErrorEvent tmpe = (ErrorEvent) player1.getEvents().get(0);
+        assertThat(tmpe.getMessage()).contains("Your list to pickup was empty.");
+
+    }
     @Test
     void testMovePlayer1AndPlayer2Pickup() throws Exception {
         newGameAndRegistration();
