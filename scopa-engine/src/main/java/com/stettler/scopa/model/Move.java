@@ -19,6 +19,8 @@ public abstract class Move {
     public Move() {
     }
 
+    abstract public String description();
+
     public Move(MoveType type) {
         this.type = type;
     }

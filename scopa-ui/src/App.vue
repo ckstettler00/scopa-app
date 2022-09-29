@@ -19,15 +19,32 @@
       </div>
 
       <v-spacer></v-spacer>
-           <v-alert v-model="alert"
-           prominent
-           dismissible
-           border="left"
-           type="error">
-            {{errorText}}
-          </v-alert>
-    </v-app-bar>
+    <v-dialog
+      v-model="alert"
+    >
+      <v-card color="pink lighten-3">
+        <v-card-title class="headline">Scopa Game Error</v-card-title>
 
+        <v-textarea class="pa-4"
+          name="input-7-1"
+          :value="errorText"
+          disabled=true
+        ></v-textarea>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+
+          <v-btn
+            color="red lighten-4"
+            @click="alert = false"
+          >
+            Ok
+          </v-btn>
+
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    </v-app-bar>
     <v-main>
          <router-view></router-view>
     </v-main>

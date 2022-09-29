@@ -38,4 +38,14 @@ public class Pickup extends Move {
         this.tableCards = tableCards;
     }
 
+    @Override
+    public String description() {
+        StringBuilder tableDesc = new StringBuilder();
+        for (Card c: this.getTableCards()) {
+            tableDesc.append(c.shortString());
+            tableDesc.append(" ");
+        }
+        return String.format("You played %s for %s", (playerCard==null)?"nothing":playerCard.shortString(), tableDesc);
+    }
+
 }

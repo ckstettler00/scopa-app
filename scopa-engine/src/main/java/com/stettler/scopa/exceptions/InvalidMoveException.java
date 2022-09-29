@@ -10,7 +10,7 @@ public class InvalidMoveException extends ScopaException {
     }
 
     public InvalidMoveException(String playerId, Move move, String message) {
-        super(playerId, String.format("%s : move %s",message, move));
+        super(playerId, String.format("%s\n%s",move.description(), message));
     }
 
     public InvalidMoveException(String playerId, Move move) {

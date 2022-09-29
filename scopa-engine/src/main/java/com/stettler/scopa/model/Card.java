@@ -30,9 +30,13 @@ public class Card implements Comparable<Card> {
         return suit;
     }
 
+    public String shortString() {
+        return String.format("%s(%d)", this.getSuit(), this.val);
+    }
+
     @Override
     public String toString() {
-        return "com.stettler.scopa.model.Card{" +
+        return "Card{" +
                 "val=" + val +
                 ", suit=" + suit +
                 '}';

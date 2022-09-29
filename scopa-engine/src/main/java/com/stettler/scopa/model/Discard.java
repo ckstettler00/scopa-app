@@ -18,4 +18,8 @@ public class Discard extends Move {
         this();
         discarded = c;
     }
+    @Override
+    public String description() {
+        return String.format("You discarded %s", (discarded==null)?"nothing":this.discarded.shortString());
+    }
 }

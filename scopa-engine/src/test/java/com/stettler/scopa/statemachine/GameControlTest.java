@@ -477,7 +477,7 @@ public class GameControlTest {
 
         // Check to see if the deck was updated in the status.
         ErrorEvent tmpe = (ErrorEvent) player1.getEvents().get(0);
-        assertThat(tmpe.getMessage()).contains("You must take the single card for that card");
+        assertThat(tmpe.getMessage()).contains("You must take the single card");
 
         assertThat(this.control.turnCounter).isEqualTo(0);
         assertThat(this.control.currentState).isEqualTo(State.WAIT_4_PLAYER1_MOVE);

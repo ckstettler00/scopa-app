@@ -75,10 +75,13 @@ public class Gameplay {
         if (pickup.getTableCards().size() != 1) {
             for (Card C : tableCards) {
                 if (C.getVal() == pickup.getPlayerCard().getVal()) {
-                    throw new InvalidMoveException(player.getDetails().getPlayerId(), pickup, "You must take the single card for that card.");
+                    throw new InvalidMoveException(player.getDetails().getPlayerId(), pickup,
+                            String.format("You must take the single card %s for %s.", C.shortString(),
+                                    pickup.getPlayerCard().shortString()));
                 }
             }
         }
+
         for (int i = 0; i < pickup.getTableCards().size(); i++) {
             sum = sum + (pickup.getTableCards().get(i).getVal());
         }
@@ -94,7 +97,10 @@ public class Gameplay {
             return pickup;
         }
 
-        throw new InvalidMoveException(player.getDetails().getPlayerId(), pickup, "Those do not add up! Please try again: ");
+        StringBuilder errorMsg = new StringBuilder();
+        errorMsg.append("\n");
+        errorMsg.append(String.format("Sum of selected cards from the table is not %s.", pickup.getPlayerCard().getVal()));
+        throw new InvalidMoveException(player.getDetails().getPlayerId(), pickup, "Those do not add up!\n"+errorMsg.toString());
     }
 
     public Move handleDiscard(Player player, Discard discard) {
