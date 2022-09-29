@@ -105,6 +105,8 @@ public class WebSocketEventSource extends EventSource {
     @Override
     public void handleException(Exception ex) {
         super.handleException(ex);
+        ErrorEvent error = new ErrorEvent(Player.ALL, ex.getMessage());
+        sendToClient(error);
     }
 
 
