@@ -23,41 +23,12 @@ const router = new VueRouter({
 Vue.config.productionTip = false
 
 var timerId = 0;
-var ws = {}
 
-const ws_url = ((window.location.protocol.endsWith('s:'))?"wss":"ws") + "://"+window.location.hostname+":8090" + "/scopaevents"
-console.info("websocket url: ["+ws_url+"]")
-const connect = () => {
-    console.info("connect -> connecting")
-    ws = new WebSocket(ws_url);
-
-    ws.onopen = function(){
-        keepAlive()
-    }
-
-
-    ws.onclose = function(){
-        cancelKeepAlive()
-        setTimeout(connect, 1000)
-    }
-
-    const keepAlive = () => {
-        var timeout = 20000;
-        if (ws.readyState == ws.OPEN) {
-            console.info("keepalive")
-            ws.send('');
-        }
-        timerId = setTimeout(keepAlive, timeout);
-    }
-    const cancelKeepAlive = () => {
-        console.info("keepalive - cancel")
-        if (timerId) {
-            clearTimeout(timerId);
-        }
-    }
+const reconn = () => {
+  console.info("Forcing a background reconnect.")
+  store.dispatch('connectToServer')
+  clearTimeout(timerId)
 }
-
-connect()
 
 const app = new Vue({
   vuetify,
@@ -65,13 +36,11 @@ const app = new Vue({
   render: h => h(App),
 
   mounted: function(){
-        ws.onmessage = (event) => {
-          this.$store.dispatch('addEventIn', JSON.parse(event.data));
-         }
+     this.$store.dispatch('connectToServer')
   },
 
   computed: {
-    ...mapGetters(['getEventsOut'])
+    ...mapGetters(['getEventsOut', 'getSocket'])
   },
 
   router,
@@ -79,7 +48,16 @@ const app = new Vue({
   watch: {
       getEventsOut: function() {
              console.info("send all events to server")
-             this.$store.dispatch('sendEvents', ws)
+             this.$store.dispatch('sendEvents')
+      },
+      getSocket: function () {
+          if (this.getSocket == null) {
+              console.info("watching getSocket --> requires reconnect")
+              timerId = setTimeout(reconn, 1000)
+              console.info("Timer id:"+ timerId)
+          } else {
+              console.info("Good connection made.")
+          }
       }
   }
 }).$mount('#app')

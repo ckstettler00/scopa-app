@@ -9,14 +9,29 @@ const state = {
     events_out: [],
     lastStatus : [],
     lastError: [],
+    newConnFlag: false,
+    socket: null
 }
+ const JoinGameEvent ={
+      "@type" : "RegisterEvent",
+      eventType : "REGISTER",
+      details : {
+          screenHandle : null,
+          emailAddr : null,
+          playerToken : null,
+          playerSecret : null
+      },
+      "gameId" : null
+ }
 
 const getters = {
     getGameList: (state) => state.gamelist,
     getEventsIn: (state) => state.events_in,
     getEventsOut: (state) => state.events_out,
     getLastStatus: (state) => state.lastStatus,
-    getLastError: (state) => state.lastError
+    getLastError: (state) => state.lastError,
+    getNewConnFlag: (state) => state.newConnFlag,
+    getSocket: (state) => state.socket
 }
 
 const actions = {
@@ -38,7 +53,62 @@ const actions = {
         })
     },
 
-    sendEvents(context, ws) {
+    connectToServer(context) {
+        const ws_url = ((window.location.protocol.endsWith('s:'))?"wss":"ws") + "://"+window.location.hostname+":8090" + "/scopaevents"
+        console.info("websocket url: ["+ws_url+"]")
+        var timerId = 0;
+        var ws = {}
+
+        console.info("connect -> connecting")
+        ws = new WebSocket(ws_url);
+        console.info("connect socket:"+JSON.stringify(ws))
+        context.commit("SOCKET", ws)
+
+        ws.onopen = function(){
+            keepAlive()
+            console.info("New Connection Detected:")
+
+              console.info("watch detected new connection:"+JSON.stringify(state.lastStatus))
+              if (state.lastStatus.status.gameId != null &&
+                  state.lastStatus.status.playerDetails.playerId != null) {
+                  var joinEvent = JoinGameEvent
+                  joinEvent.gameId = state.lastStatus.status.gameId
+                  joinEvent.details.playerId = state.lastStatus.status.playerDetails.playerId
+                  joinEvent.details.screenHandle = state.lastStatus.status.playerDetails.screenHandle
+                  joinEvent.details.playerSecret = state.lastStatus.status.playerDetails.playerSecret
+                  console.info("Rejoining game in progress:"+JSON.stringify(joinEvent))
+                  context.dispatch('addEventOut', joinEvent)
+              } else {
+                  console.info("New connection but game not in progress.")
+              }
+        }
+
+        ws.onmessage = (event) => {
+            context.dispatch('addEventIn', JSON.parse(event.data));
+        }
+
+        ws.onclose = function(){
+            cancelKeepAlive()
+            context.commit("SOCKET", null)
+        }
+
+        const keepAlive = () => {
+            var timeout = 20000;
+            if (ws.readyState == ws.OPEN) {
+                console.info("keepalive")
+                ws.send('');
+            }
+            timerId = setTimeout(keepAlive, timeout);
+        }
+        const cancelKeepAlive = () => {
+            console.info("keepalive - cancel")
+            if (timerId) {
+                clearTimeout(timerId);
+            }
+        }
+    },
+
+    sendEvents(context) {
         var list = [...state.events_out]
         console.info("sendEvents - all events:"+JSON.stringify(list))
         var e = list.shift()
@@ -51,13 +121,17 @@ const actions = {
                     payload : JSON.stringify(e)
                   }
                 console.info("sentEvents: " + JSON.stringify(msg))
-                ws.send(JSON.stringify(msg))
+                state.socket.send(JSON.stringify(msg))
             }
             e = list.shift()
         }
         if (state.events_out.length > 0) {
             context.commit("CLEAR_EVENTS")
         }
+    },
+    changeConnFlag(context, value) {
+        console.info("changeConnFlag:"+value)
+        context.commit("CHANGE_CONN_FLAG", value)
     },
     addEventOut(context, event) {
         console.info("addEventOut:"+JSON.stringify(event))
@@ -79,6 +153,14 @@ const actions = {
 }
 
 const mutations = {
+    CHANGE_CONN_FLAG(state, value) {
+        console.info("CHANGE_CONN_FLAG:" + value)
+        state.newConnFlag = true
+    },
+    SOCKET(state, value) {
+        console.info("Setting socket:"+JSON.stringify(value))
+        state.socket = value
+    },
     ADD_EVENT_IN(state, event) {
         console.info("ADD_EVENT_IN: " + JSON.stringify(event))
         state.events_in.push(event)
