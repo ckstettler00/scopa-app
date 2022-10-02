@@ -119,6 +119,8 @@ public class Gameplay {
         }
         player.getHand().remove(discard.getDiscarded());
         tableCards.add(discard.getDiscarded());
+        player.setLastCardPlayed(discard.getDiscarded());
+
         return discard;
 
     }

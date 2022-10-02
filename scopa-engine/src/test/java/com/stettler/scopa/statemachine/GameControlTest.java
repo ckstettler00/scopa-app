@@ -6,7 +6,6 @@ import com.stettler.scopa.model.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestTemplate;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -597,9 +596,9 @@ public class GameControlTest {
 
         // Check to see if the deck was updated in the status.
         GameStatusEvent tmpe = (GameStatusEvent) player1.getEvents().get(0);
-        assertThat(tmpe.getStatus().getOpponentsLastCard()).isNull();
+        assertThat(tmpe.getStatus().getOpponentLastCard()).isNull();
         GameStatusEvent tmpe2 = (GameStatusEvent) player2.getEvents().get(0);
-        assertThat(tmpe2.getStatus().getOpponentsLastCard()).isEqualTo(new Card(4, Suit.CUPS));
+        assertThat(tmpe2.getStatus().getOpponentLastCard()).isEqualTo(new Card(4, Suit.CUPS));
 
         assertThat(tmpe.getStatus().getTable()).containsExactly(new Card(1, Suit.COINS), new Card(2, Suit.COINS),
                 new Card(6, Suit.COINS)).isEqualTo(this.control.gameplay.tableCards);
@@ -623,9 +622,9 @@ public class GameControlTest {
                 .isEqualTo(this.control.getPlayer2().getHand());
         assertThat(tmpe.getStatus().getOpponentCardCount()).isEqualTo(this.control.getPlayer1().getHand().size());
 
-        assertThat(tmpe.getStatus().getOpponentsLastCard()).isEqualTo(new Card(4, Suit.CUPS));
+        assertThat(tmpe.getStatus().getOpponentLastCard()).isEqualTo(new Card(4, Suit.CUPS));
         GameStatusEvent tmpe1 = (GameStatusEvent) player1.getEvents().get(0);
-        assertThat(tmpe1.getStatus().getOpponentsLastCard()).isEqualTo(new Card(3, Suit.SWORDS));
+        assertThat(tmpe1.getStatus().getOpponentLastCard()).isEqualTo(new Card(3, Suit.SWORDS));
 
 
         assertThat(control.currentState).isEqualTo(State.WAIT_4_PLAYER1_MOVE);
@@ -719,6 +718,7 @@ public class GameControlTest {
         // Player2 playing a discard.
         triggerEvent(control, new PlayResponseEvent(player2Id, new Discard(new Card(5, Suit.SWORDS)), this.control.getGameId()));
         assertThat(player2.getEvents().get(0)).isInstanceOf(GameStatusEvent.class);
+        assertThat(((GameStatusEvent)player1.getEvents().get(0)).getStatus().getOpponentLastCard()).isEqualTo(new Card(5,Suit.SWORDS));
 
         // The last 6 cards should  have been dealt.
         assertThat(this.control.gameplay.deck.size()).isEqualTo(0);
