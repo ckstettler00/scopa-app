@@ -23,7 +23,22 @@
                     </v-img>
                 </v-card>
             </v-col>
-            <v-col cols=6>
+            <v-col cols=1>
+                <v-spacer/>
+            </v-col>
+            <v-col cols=2>
+                <v-card  class="pa-1"
+                    outlined
+                    shaped
+                    tile>
+                    <v-img
+                      :src="opponentLastCardFile()"
+                      class="grey lighten-2 pa-1"
+                    >
+                    </v-img>
+                </v-card>
+            </v-col>
+            <v-col cols=3>
                 <v-spacer/>
             </v-col>
         </v-row>
@@ -299,6 +314,7 @@ export default {
             this.opponentScore = this.getLastStatus.status.opponentScore
             this.playerName = this.getLastStatus.status.playerDetails.screenHandle
             this.playerScore = this.getLastStatus.status.playerScore
+            this.opponentLastCard = { "card" : this.getLastStatus.status.opponentLastCard }
 
 
             if (this.getLastStatus.status.playerDetails.playerId == this.getLastStatus.status.currentPlayerId) {
@@ -310,6 +326,18 @@ export default {
             this.updatePlayText()
 
       },
+
+      opponentLastCardFile: function() {
+          var list = []
+
+          console.info("last card:"+JSON.stringify(this.opponentLastCard))
+          if (this.opponentLastCard.card != null) {
+              list.push(this.opponentLastCard)
+              return this.createAssetName(list, 1)
+          }
+          return cardfaces["empty"]
+      },
+
       opponentCard: function(idx) {
           console.log("opponentCard idx:" + idx)
 
@@ -435,6 +463,7 @@ export default {
         playerName: 'unknown',
         opponentName: 'unknown',
         opponentScore: 0,
+        opponentLastCard: null,
         playerScore: 0,
         cardsLeft: 0,
         gameId: null,
