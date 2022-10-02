@@ -201,7 +201,7 @@ public class GameControl extends EventSource {
         currentState = next;
     }
 
-    protected EventSource lookupSource(Player p) {
+    public EventSource lookupSource(Player p) {
         logger.info("lookupSource: source:{} player:{}", this.playerMap, p.getDetails());
         return this.playerMap.get(p.getDetails().getPlayerId());
     }

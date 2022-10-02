@@ -31,6 +31,14 @@ public class WebSocketEventSource extends EventSource {
 
     private WebSocketSession session = null;
 
+    public void close() {
+        logger.info("Forcing connection close");
+        try {
+            session.close();
+        } catch (IOException e) {
+            //NOOP
+        }
+    }
     public WebSocketEventSource(WebSocketSession session) {
         logger.info("Creating WebSocketEventSource for session:{}", session.getId());
         this.session = session;

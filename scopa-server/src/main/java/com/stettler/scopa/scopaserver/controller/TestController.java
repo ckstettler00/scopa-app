@@ -6,7 +6,9 @@ import com.stettler.scopa.scopaserver.model.GameEntry;
 import com.stettler.scopa.scopaserver.model.TestGameSetup;
 import com.stettler.scopa.scopaserver.service.GameService;
 import com.stettler.scopa.scopaserver.utils.GameRegistry;
+import com.stettler.scopa.scopaserver.websockets.WebSocketEventSource;
 import com.stettler.scopa.statemachine.GameControl;
+import com.stettler.scopa.statemachine.Player;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +26,17 @@ public class TestController {
     @Autowired
     private GameRegistry registry;
 
+    @GetMapping (path="/kill/{gameId}/{playerNum}")
+    public void killPlayer(@PathVariable("gameId") String gameId, @PathVariable("playerNum") Integer playerNum) {
+        GameControl game = registry.findGame(gameId);
+        if (game == null) {
+            logger.error("gameSetup: game id:{} not found", gameId);
+            throw new ScopaRuntimeException("Cant file game:"+gameId);
+        }
+        Player p = game.getAllPlayers().get(playerNum);
+        WebSocketEventSource s = (WebSocketEventSource) game.lookupSource(p);
+        s.close();
+    }
     @PostMapping(path = "/initgame/{gameId}", produces = "application/json")
     public void gameSetup(@PathVariable("gameId") String gameId, @RequestBody TestGameSetup setup){
         GameControl game = registry.findGame(gameId);
