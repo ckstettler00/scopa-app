@@ -13,6 +13,9 @@ public class Player {
     final public static String ALL="all";
 
     private com.stettler.scopa.model.PlayerDetails details;
+
+    Card lastCardPlayed;
+
     List<Card> hand = new ArrayList<>();
     private int coins = 0;
     private int total = 0;
@@ -53,8 +56,13 @@ public class Player {
             }
 
         }
-        if(handCard.isPresent())
+
+        if(handCard.isPresent()) {
             this.hand.remove(handCard.get());
+            this.lastCardPlayed = handCard.get();
+        } else {
+            this.lastCardPlayed = null;
+        }
     }
 
     public void deal(Card newCard){
@@ -99,6 +107,14 @@ public class Player {
         primesCups = 0;
         primesSwords = 0;
         primesScepter = 0;
+    }
+
+    public Card getLastCardPlayed() {
+        return lastCardPlayed;
+    }
+
+    public void setLastCardPlayed(Card lastCardPlayed) {
+        this.lastCardPlayed = lastCardPlayed;
     }
 
     @Override

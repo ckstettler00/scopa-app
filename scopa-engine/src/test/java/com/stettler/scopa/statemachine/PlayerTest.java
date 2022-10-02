@@ -87,6 +87,7 @@ public class PlayerTest {
             p.deal(c);
             p.play(Optional.of(c), Arrays.asList(new Card(i+1, Suit.SCEPTERS)));
 
+            assertThat(p.getLastCardPlayed()).isEqualTo(c);
             assertThat(p.getCoins()).isEqualTo(i+1);
             assertThat(p.getScore()).isEqualTo(0);
             assertThat(p.getTotal()).isEqualTo((i+1)*2);

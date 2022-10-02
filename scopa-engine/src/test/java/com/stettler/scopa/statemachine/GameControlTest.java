@@ -597,11 +597,16 @@ public class GameControlTest {
 
         // Check to see if the deck was updated in the status.
         GameStatusEvent tmpe = (GameStatusEvent) player1.getEvents().get(0);
+        assertThat(tmpe.getStatus().getOpponentsLastCard()).isNull();
+        GameStatusEvent tmpe2 = (GameStatusEvent) player2.getEvents().get(0);
+        assertThat(tmpe2.getStatus().getOpponentsLastCard()).isEqualTo(new Card(4, Suit.CUPS));
+
         assertThat(tmpe.getStatus().getTable()).containsExactly(new Card(1, Suit.COINS), new Card(2, Suit.COINS),
                 new Card(6, Suit.COINS)).isEqualTo(this.control.gameplay.tableCards);
         assertThat(tmpe.getStatus().getPlayerHand()).containsExactly(new Card(1, Suit.CUPS), new Card(2, Suit.CUPS),
                 new Card(3, Suit.CUPS)).isEqualTo(this.control.getPlayer1().getHand());
         assertThat(tmpe.getStatus().getOpponentCardCount()).isEqualTo(this.control.getPlayer2().getHand().size());
+
 
         assertThat(control.currentState).isEqualTo(State.WAIT_4_PLAYER2_MOVE);
         assertThat(player2.getEvents().get(1)).isInstanceOf(PlayRequestEvent.class);
@@ -617,6 +622,11 @@ public class GameControlTest {
         assertThat(tmpe.getStatus().getPlayerHand()).containsExactly(new Card(1, Suit.SWORDS), new Card(2, Suit.SWORDS), new Card(4, Suit.SWORDS))
                 .isEqualTo(this.control.getPlayer2().getHand());
         assertThat(tmpe.getStatus().getOpponentCardCount()).isEqualTo(this.control.getPlayer1().getHand().size());
+
+        assertThat(tmpe.getStatus().getOpponentsLastCard()).isEqualTo(new Card(4, Suit.CUPS));
+        GameStatusEvent tmpe1 = (GameStatusEvent) player1.getEvents().get(0);
+        assertThat(tmpe1.getStatus().getOpponentsLastCard()).isEqualTo(new Card(3, Suit.SWORDS));
+
 
         assertThat(control.currentState).isEqualTo(State.WAIT_4_PLAYER1_MOVE);
         assertThat(player1.getEvents().get(1)).isInstanceOf(PlayRequestEvent.class);

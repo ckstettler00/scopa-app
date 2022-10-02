@@ -17,6 +17,8 @@ public class GameStatus {
 
     private int opponentCardCount;
 
+    private Card opponentsLastCard;
+
     private PlayerDetails opponentDetails;
 
     private int opponentScore;
@@ -114,6 +116,14 @@ public class GameStatus {
 
     public void setPlayerScore(int playerScore) {
         this.playerScore = playerScore;
+    }
+
+    public Card getOpponentsLastCard() {
+        return opponentsLastCard;
+    }
+
+    public void setOpponentsLastCard(Card opponentsLastCard) {
+        this.opponentsLastCard = opponentsLastCard;
     }
 
     @Override

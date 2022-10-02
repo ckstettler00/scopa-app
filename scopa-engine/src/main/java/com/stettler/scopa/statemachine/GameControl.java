@@ -49,10 +49,13 @@ public class GameControl extends EventSource {
                 status.setOpponentCardCount(this.playerOrder.get(1).getHand().size());
                 status.setOpponentDetails(this.playerOrder.get(1).getDetails());
                 status.setOpponentScore(this.playerOrder.get(1).getScore());
+                status.setOpponentsLastCard(this.playerOrder.get(1).getLastCardPlayed());
             } else {
                 status.setOpponentCardCount(this.playerOrder.get(0).getHand().size());
                 status.setOpponentDetails(this.playerOrder.get(0).getDetails());
-                status.setOpponentScore(this.playerOrder.get(0).getScore());           }
+                status.setOpponentScore(this.playerOrder.get(0).getScore());
+                status.setOpponentsLastCard(this.playerOrder.get(0).getLastCardPlayed());
+            }
         }
         if (this.currentPlayer != null) {
             status.setCurrentPlayerId(currentPlayer.getDetails().getPlayerId());
