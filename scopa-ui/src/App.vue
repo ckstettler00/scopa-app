@@ -21,14 +21,14 @@
       <v-spacer></v-spacer>
     <v-dialog
       v-model="alert"
+       align-center
+       max-width="50%"
     >
-      <v-card color="pink lighten-3">
-        <v-card-title class="headline">Scopa Game Error</v-card-title>
-
+      <v-card color="pink lighten-5">
         <v-textarea class="pa-4"
           name="input-7-1"
           :value="errorText"
-          disabled=true
+          readonly=true
         ></v-textarea>
 
         <v-card-actions>
