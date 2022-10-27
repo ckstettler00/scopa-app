@@ -1,5 +1,7 @@
 package com.stettler.scopa.scopaserver.controller;
 
+import com.stettler.scopa.events.GameOverEvent;
+import com.stettler.scopa.events.ScopaEvent;
 import com.stettler.scopa.exceptions.ScopaRuntimeException;
 import com.stettler.scopa.model.GameStatus;
 import com.stettler.scopa.scopaserver.model.GameEntry;
@@ -16,6 +18,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.PostConstruct;
 import java.util.List;
 
 @Profile("testhelper")
@@ -26,7 +29,51 @@ public class TestController {
     @Autowired
     private GameRegistry registry;
 
-    @GetMapping (path="/kill/{gameId}/{playerNum}")
+
+    @PostConstruct
+    void init() {
+        logger.warn("TestHelper is enabled.");
+    }
+
+    @PostMapping(path="simulate/gameover/{gameId}/{playerNum}")
+    public void gameOver(@PathVariable("gameId") String gameId, @PathVariable("playerNum") Integer playerNum) {
+        GameControl game = registry.findGame(gameId);
+        if (game == null) {
+            logger.error("gameSetup: game id:{} not found", gameId);
+            throw new ScopaRuntimeException("Cant file game:"+gameId);
+        }
+
+        WebSocketEventSource s1 = (WebSocketEventSource) game.lookupSource(game.getAllPlayers().get(0));
+        WebSocketEventSource s2 = (WebSocketEventSource) game.lookupSource(game.getAllPlayers().get(1));
+        GameOverEvent event = new GameOverEvent();
+        event.setGameId(gameId);
+        event.setLosingPlayer(game.getAllPlayers().get((playerNum==0)?1:0).getDetails());
+        event.setWinningPlayer(game.getAllPlayers().get(playerNum).getDetails());
+        event.setLosingScore(11);
+        event.setWinningScore(12);
+
+        s1.triggerEvent(event);
+        s2.triggerEvent(event);
+    }
+
+    @PostMapping(path="simulate/scopa/{gameId}/{playerNum}")
+    public void scopa(@PathVariable("gameId") String gameId, @PathVariable("playerNum") Integer playerNum) {
+        GameControl game = registry.findGame(gameId);
+        if (game == null) {
+            logger.error("gameSetup: game id:{} not found", gameId);
+            throw new ScopaRuntimeException("Cant file game:"+gameId);
+        }
+
+        WebSocketEventSource s = (WebSocketEventSource) game.lookupSource(game.getAllPlayers().get(playerNum));
+
+        ScopaEvent event = new ScopaEvent();
+        event.setGameId(gameId);
+        event.setFinalTrick(false);
+
+        s.triggerEvent(event);
+    }
+
+    @GetMapping (path="kill/{gameId}/{playerNum}")
     public void killPlayer(@PathVariable("gameId") String gameId, @PathVariable("playerNum") Integer playerNum) {
         GameControl game = registry.findGame(gameId);
         if (game == null) {
@@ -37,7 +84,7 @@ public class TestController {
         WebSocketEventSource s = (WebSocketEventSource) game.lookupSource(p);
         s.close();
     }
-    @PostMapping(path = "/initgame/{gameId}", produces = "application/json")
+    @PostMapping(path = "initgame/{gameId}", produces = "application/json")
     public void gameSetup(@PathVariable("gameId") String gameId, @RequestBody TestGameSetup setup){
         GameControl game = registry.findGame(gameId);
         if (game == null) {

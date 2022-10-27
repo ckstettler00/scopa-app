@@ -11,7 +11,9 @@ mvn clean install
 
 ## Execute
 ```
-mvn spring-boot:run
+mvn spring-boot:run -Dspring-boot.run.profiles=testhelper
+
+testhelper -- enables apis for simulated game events.
 
 or 
 

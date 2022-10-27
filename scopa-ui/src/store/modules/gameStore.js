@@ -10,7 +10,9 @@ const state = {
     lastStatus : [],
     lastError: [],
     newConnFlag: false,
-    socket: null
+    socket: null,
+    gameOver: false,
+    scopa : false
 }
  const JoinGameEvent ={
       "@type" : "RegisterEvent",
@@ -31,7 +33,9 @@ const getters = {
     getLastStatus: (state) => state.lastStatus,
     getLastError: (state) => state.lastError,
     getNewConnFlag: (state) => state.newConnFlag,
-    getSocket: (state) => state.socket
+    getSocket: (state) => state.socket,
+    getScopa: (state) => state.scopa,
+    getGameOver: (state) => state.gameOver
 }
 
 const actions = {
@@ -145,6 +149,14 @@ const actions = {
             console.info("addEventIn detected status "+JSON.stringify(e))
             context.commit("SET_LAST_STATUS", e)
         }
+        if (e.eventType == "SCOPA") {
+            console.info("addEventIn detected scopa "+JSON.stringify(e))
+            context.commit("SET_SCOPA", true)
+        }
+        if (e.eventType == "GAMEOVER") {
+            console.info("addEventIn detected gameover "+JSON.stringify(e))
+            context.commit("SET_GAMEOVER", true)
+        }
         if (e.eventType == "ERROR") {
             console.info("addEventIn detected error "+JSON.stringify(e))
             context.commit("SET_LAST_ERROR", e)
@@ -177,6 +189,14 @@ const mutations = {
     },
     SET_LAST_ERROR(state, event) {
         state.lastError = event
+    },
+    SET_SCOPA(state, value) {
+        console.info("SET_SCOPA:" + value)
+        state.scopa = value
+    },
+    SET_GAMEOVER(value) {
+        console.info("SET_GAMEOVER:" + value)
+        state.gameOver = value
     },
     CLEAR_EVENTS(state) {
         console.info("clear_events")

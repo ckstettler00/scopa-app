@@ -47,27 +47,16 @@
     </v-dialog>
     </v-app-bar>
     <v-main>
-        <v-snackbar
-            v-model="snackbar"
-            timeout=3000
-            centered=true
-            color=primary
-            class="[text-h1]"
-            >
-            Scopa!!
-         </v-snackbar>
-
-         <router-view></router-view>
+        <BigBanner/>
+        <router-view></router-view>
     </v-main>
   </v-app>
 </template>
 
 <script>
-import Vue from 'vue'
-import VueConfetti from 'vue-confetti'
-import { mapGetters } from 'vuex';
 
-Vue.use(VueConfetti)
+import { mapGetters } from 'vuex';
+import BigBanner from './components/BigBanner.vue'
 
 export default {
   name: 'App',
@@ -75,10 +64,8 @@ export default {
   created() {
       this.$router.push("/join")
   },
-  methods: {
-        confetti_stop: function() {
-            this.$confetti.stop()
-        }
+  components: {
+      BigBanner
   },
   computed: {
       ...mapGetters(['getLastError']),
@@ -86,15 +73,11 @@ export default {
   watch: {
         getLastError : function() {
             console.info("error handler:"+JSON.stringify(this.getLastError))
-           // this.alert=true
+            this.alert=true
             this.errorText = this.getLastError.message
-            this.$confetti.start()
-            setTimeout(this.confetti_stop, 2000)
-            this.snackbar=true
         }
     },
   data: () => ({
-        snackbar: false,
         alert: false,
         errorText: 'UNKNOWN ERROR'
   }),
