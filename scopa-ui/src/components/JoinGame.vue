@@ -166,7 +166,6 @@
     created() {
         this.$store.dispatch('fetchGameList')
             .then(() => {
-        console.info("store:"+JSON.stringify(this.$store.getters))
                 this.loading = false
               })
     },

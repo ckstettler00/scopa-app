@@ -12,7 +12,8 @@ const state = {
     newConnFlag: false,
     socket: null,
     gameOver: false,
-    scopa : false
+    scopa : false,
+    finalScore : null,
 }
  const JoinGameEvent ={
       "@type" : "RegisterEvent",
@@ -35,7 +36,8 @@ const getters = {
     getNewConnFlag: (state) => state.newConnFlag,
     getSocket: (state) => state.socket,
     getScopa: (state) => state.scopa,
-    getGameOver: (state) => state.gameOver
+    getGameOver: (state) => state.gameOver,
+    getFinalScore: (state) => state.finalScore,
 }
 
 const actions = {
@@ -133,6 +135,13 @@ const actions = {
             context.commit("CLEAR_EVENTS")
         }
     },
+    clearScopa(context) {
+        context.commit("SET_SCOPA", false)
+    },
+    clearGameOver(context) {
+        console.info("Clearing game over.")
+        context.commit("SET_GAMEOVER", false)
+    },
     changeConnFlag(context, value) {
         console.info("changeConnFlag:"+value)
         context.commit("CHANGE_CONN_FLAG", value)
@@ -156,6 +165,7 @@ const actions = {
         if (e.eventType == "GAMEOVER") {
             console.info("addEventIn detected gameover "+JSON.stringify(e))
             context.commit("SET_GAMEOVER", true)
+            context.commit("SET_FINAL_SCORE", e)
         }
         if (e.eventType == "ERROR") {
             console.info("addEventIn detected error "+JSON.stringify(e))
@@ -190,12 +200,15 @@ const mutations = {
     SET_LAST_ERROR(state, event) {
         state.lastError = event
     },
+    SET_FINAL_SCORE(state, event) {
+        state.finalScore = event
+    },
     SET_SCOPA(state, value) {
-        console.info("SET_SCOPA:" + value)
+        console.info("SET_SCOPA:" + JSON.stringify(value))
         state.scopa = value
     },
-    SET_GAMEOVER(value) {
-        console.info("SET_GAMEOVER:" + value)
+    SET_GAMEOVER(state, value) {
+        console.info("SET_GAMEOVER: " + JSON.stringify(value))
         state.gameOver = value
     },
     CLEAR_EVENTS(state) {
