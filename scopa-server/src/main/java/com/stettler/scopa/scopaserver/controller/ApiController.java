@@ -31,4 +31,10 @@ public class ApiController {
         return list;
     }
 
+    @GetMapping(path = "/health", produces = "application/json")
+    public String getGameStatus(){
+        return "{ \"status\": \"ok\"}";
+    }
+
+
 }

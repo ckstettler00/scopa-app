@@ -43,7 +43,7 @@ const getters = {
 const actions = {
 
     fetchGameList(context) {
-       var api_url = window.location.protocol + "//"+window.location.hostname + ":8090/scopa/gamelist"
+       var api_url = process.env.VUE_APP_API_BASEURL + "/scopa/gamelist"
        console.info("server url: "+ api_url)
 
        console.info("fetchGameList")
@@ -60,7 +60,7 @@ const actions = {
     },
 
     connectToServer(context) {
-        const ws_url = ((window.location.protocol.endsWith('s:'))?"wss":"ws") + "://"+window.location.hostname+":8090" + "/scopaevents"
+        const ws_url = process.env.VUE_APP_WS_BASEURL + "/scopaevents"
         console.info("websocket url: ["+ws_url+"]")
         var timerId = 0;
         var ws = {}
